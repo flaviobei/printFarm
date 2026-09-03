@@ -1,0 +1,56 @@
+{
+  "sidebar": {
+    "title": "printFarm",
+    "dashboard": "Dashboard",
+    "productionQueue": "Fila de Produção",
+    "catalog": "Catálogo de SKUs",
+    "inventory": "Estoque",
+    "settings": "Configurações"
+  },
+  "home": {
+    "title": "printFarm"
+  },
+  "pedidos": {
+    "title": "Fila de Produção",
+    "description": "Acompanhe e gerencie a fila de produção e integração com Mercado Livre.",
+    "columns": {
+      "pending": "Aguardando Produção",
+      "printing": "Imprimindo",
+      "finishing": "Acabamento",
+      "ready": "Pronto para Envio",
+      "shipped": "Enviado"
+    },
+    "cards": {
+      "deadline": "Prazo:"
+    }
+  },
+  "catalogo": {
+    "title": "Catálogo de SKUs",
+    "description": "Gerencie seus produtos, parâmetros de impressão e acompanhe o lucro real.",
+    "table": {
+      "name": "Nome / Produto",
+      "material": "Material",
+      "specs": "Especificações",
+      "salePrice": "Preço de Venda",
+      "netProfit": "Lucro Líquido",
+      "margin": "Margem",
+      "actions": "Ações"
+    }
+  },
+  "estoque": {
+    "title": "Estoque de Filamentos",
+    "description": "Gerencie seus rolos de filamento, consumo e acompanhe a necessidade de reposição.",
+    "table": {
+      "type": "Tipo",
+      "color": "Cor",
+      "remaining": "Restante (g)",
+      "status": "Status",
+      "actions": "Ações"
+    },
+    "status": {
+      "ok": "Normal",
+      "low": "Baixo",
+      "critical": "Crítico"
+    }
+  }
+}
