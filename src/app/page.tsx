@@ -119,7 +119,7 @@ export default function Home() {
               <XAxis dataKey="name" axisLine={false} tickLine={false} />
               <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `R$${value}`} />
               <Tooltip 
-                formatter={(value: number) => formatBRL(value)}
+                formatter={(value: any) => formatBRL(Number(value))}
                 cursor={{ fill: 'rgba(0,0,0,0.05)' }} 
               />
               <Legend />
