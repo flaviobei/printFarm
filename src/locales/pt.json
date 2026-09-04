@@ -64,5 +64,34 @@
       "low": "Baixo",
       "critical": "Crítico"
     }
+  },
+  "forms": {
+    "addSku": "Adicionar Produto",
+    "addOrder": "Novo Pedido",
+    "addInventory": "Novo Rolo de Filamento",
+    "sku": {
+      "name": "Nome do Produto",
+      "material": "Material (ex: PLA, PETG)",
+      "weight": "Peso Gasto (em gramas)",
+      "printTime": "Tempo de Impressão (em horas)",
+      "salePrice": "Preço de Venda (R$)"
+    },
+    "order": {
+      "sku": "Produto",
+      "customerName": "Nome do Cliente",
+      "deadline": "Data Limite (Prazo)"
+    },
+    "inventory": {
+      "material": "Material",
+      "color": "Cor",
+      "grams": "Peso Inicial (gramas)"
+    }
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Deletar",
+    "edit": "Editar",
+    "deleteConfirm": "Tem certeza que deseja deletar este item?"
   }
 }

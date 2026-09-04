@@ -1,53 +1,111 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { getDictionary } from '@/lib/i18n';
-import { mockOrders, mockSKUs } from '@/services/db-mock';
-import { calculatePrintCost } from '@/services/cost-calculator';
+import { api, Order, SKU, UserSettings } from '@/services/api';
+import { calculatePrintCost, CostParameters } from '@/services/cost-calculator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { DollarSign, TrendingUp, Package, Printer } from 'lucide-react';
+import { DollarSign, TrendingUp, Package, Printer, Database } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 export default function Home() {
   const dict = getDictionary().home;
+  
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [skus, setSkus] = useState<SKU[]>([]);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSeeding, setIsSeeding] = useState(false);
 
-  // Parâmetros fixos para o MVP
-  const defaultParams = {
-    filamentPricePerKg: 120.00,
-    printerPowerWatts: 250,
-    electricityPricePerKwh: 0.85,
-    failureRatePercentage: 5,
-    packagingCost: 2.50,
-    shippingCost: 0,
-    marketplaceFeePercentage: 12,
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const [fetchedOrders, fetchedSkus, fetchedSettings] = await Promise.all([
+        api.getOrders(),
+        api.getSKUs(),
+        api.getUserSettings()
+      ]);
+      setOrders(fetchedOrders);
+      setSkus(fetchedSkus);
+      setSettings(fetchedSettings);
+      setIsLoading(false);
+    }
+    loadData();
+  }, []);
+
+  const handleSeedDatabase = async () => {
+    setIsSeeding(true);
+    const supabase = createClient();
+    const { data } = await supabase.auth.getUser();
+    if (data.user) {
+      await api.seedDatabase(data.user.id);
+      window.location.reload(); // Recarrega para buscar os novos dados
+    }
+    setIsSeeding(false);
+  };
+
+  // Se o BD estiver vazio, mostra a opção de Seed
+  if (!isLoading && orders.length === 0 && skus.length === 0) {
+    return (
+      <div className="p-8 h-full flex flex-col items-center justify-center text-center">
+        <Database className="w-16 h-16 text-muted-foreground mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Banco de Dados Vazio</h2>
+        <p className="text-muted-foreground max-w-md mb-8">
+          Parece que você acabou de configurar o Supabase. Deseja injetar os dados de demonstração (Dragão, Vaso, Pedidos e Estoque) para ver o sistema funcionando?
+        </p>
+        <button 
+          onClick={handleSeedDatabase}
+          disabled={isSeeding}
+          className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+        >
+          {isSeeding ? 'Injetando Dados...' : 'Popular Banco de Dados'}
+        </button>
+      </div>
+    );
+  }
+
+  // Fallback seguro caso user_settings ainda não exista no DB
+  const safeSettings = settings || {
+    electricity_price_per_kwh: 0.85,
+    printer_power_watts: 250,
+    failure_rate_percentage: 5,
+    marketplace_fee_percentage: 12
   };
 
   // KPIs Calculation
   let totalRevenue = 0;
   let totalProfit = 0;
-  const pendingOrders = mockOrders.filter(o => o.status === 'pending' || o.status === 'printing').length;
+  const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'printing').length;
   const activePrinters = 2; // Simulação fixa
 
   // Preparando os dados para o Gráfico
   const chartDataMap: Record<string, { name: string, revenue: number, profit: number }> = {};
 
-  mockOrders.forEach(order => {
-    const sku = mockSKUs.find(s => s.id === order.skuId);
+  orders.forEach(order => {
+    const sku = skus.find(s => s.id === order.sku_id);
     if (sku) {
-      const params = {
-        ...defaultParams,
-        filamentWeightGrams: sku.weightGrams,
-        printTimeHours: sku.printTimeHours,
-        salePrice: sku.salePrice,
+      const params: CostParameters = {
+        filamentPricePerKg: 120.00, // Custo do rolo será dinâmico depois
+        printerPowerWatts: Number(safeSettings.printer_power_watts),
+        electricityPricePerKwh: Number(safeSettings.electricity_price_per_kwh),
+        failureRatePercentage: Number(safeSettings.failure_rate_percentage),
+        packagingCost: 2.50,
+        shippingCost: 0,
+        marketplaceFeePercentage: Number(safeSettings.marketplace_fee_percentage),
+        filamentWeightGrams: Number(sku.weight_grams),
+        printTimeHours: Number(sku.print_time_hours),
+        salePrice: Number(sku.sale_price),
       };
       const result = calculatePrintCost(params);
       
-      totalRevenue += sku.salePrice;
+      totalRevenue += Number(sku.sale_price);
       totalProfit += result.netProfit;
 
       if (!chartDataMap[sku.id]) {
         chartDataMap[sku.id] = { name: sku.name, revenue: 0, profit: 0 };
       }
-      chartDataMap[sku.id].revenue += sku.salePrice;
+      chartDataMap[sku.id].revenue += Number(sku.sale_price);
       chartDataMap[sku.id].profit += result.netProfit;
     }
   });
@@ -55,6 +113,10 @@ export default function Home() {
   const chartData = Object.values(chartDataMap);
 
   const formatBRL = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+
+  if (isLoading) {
+    return <div className="p-8 flex items-center justify-center h-full">Carregando dados...</div>;
+  }
 
   return (
     <div className="p-8 flex flex-col gap-8 h-full">
