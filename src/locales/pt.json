@@ -5,7 +5,10 @@
     "productionQueue": "Fila de Produção",
     "catalog": "Catálogo de SKUs",
     "inventory": "Estoque",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "billing": "Assinaturas",
+    "admin": "Super Admin",
+    "logout": "Sair"
   },
   "home": {
     "title": "Dashboard Geral",
@@ -113,5 +116,34 @@
     "delete": "Deletar",
     "edit": "Editar",
     "deleteConfirm": "Tem certeza que deseja deletar este item?"
+  },
+  "billing": {
+    "title": "Planos e Assinatura",
+    "description": "Gerencie os limites e recursos da sua fazenda de impressão.",
+    "currentPlan": "Seu plano atual:",
+    "startTrial": "Começar Trial de 15 dias",
+    "upgrade": "Fazer Upgrade",
+    "contactUs": "Fale Conosco",
+    "month": "/mês",
+    "plans": {
+      "free": "Gratuito",
+      "basic": "Básico",
+      "pro": "Profissional",
+      "enterprise": "Enterprise"
+    },
+    "features": {
+      "feat_1_printer": "Até 1 impressora",
+      "feat_2_skus": "Até 2 produtos (SKUs)",
+      "feat_community_support": "Suporte da Comunidade",
+      "feat_5_printers": "Até 5 impressoras",
+      "feat_unlimited_skus": "Produtos ilimitados",
+      "feat_email_support": "Suporte via Email",
+      "feat_unlimited_printers": "Impressoras ilimitadas",
+      "feat_priority_support": "Suporte Prioritário (24/7)",
+      "feat_api_access": "Acesso à API",
+      "feat_custom_integration": "Integrações Customizadas",
+      "feat_dedicated_manager": "Gerente de Conta Dedicado",
+      "feat_sla": "SLA de 99.9% Uptime"
+    }
   }
 }

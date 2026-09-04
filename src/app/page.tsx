@@ -22,6 +22,18 @@ export default function Home() {
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
+      
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      
+      const storedDevView = localStorage.getItem('dev_admin_view');
+      const shouldBeAdmin = storedDevView !== 'false';
+
+      if (shouldBeAdmin && (userData.user?.email === 'flaviobei@gmail.com' || userData.user?.email?.startsWith('admin@'))) {
+        window.location.href = '/admin';
+        return;
+      }
+
       const [fetchedOrders, fetchedSkus, fetchedSettings] = await Promise.all([
         api.getOrders(),
         api.getSKUs(),

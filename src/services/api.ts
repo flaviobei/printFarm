@@ -38,7 +38,85 @@ export type Inventory = {
   created_at: string;
 };
 
+// --- Estrutura Dinâmica dos Planos do SaaS ---
+export type SaaSPlan = {
+  id: string;
+  key: string; // Para tradução (ex: 'free', 'basic', 'pro', 'enterprise')
+  price_brl: number;
+  price_usd: number;
+  is_contact: boolean;
+  has_trial: boolean;
+  features: string[]; // Chaves de tradução das features
+  limits: {
+    printers: number | 'unlimited';
+    skus: number | 'unlimited';
+  };
+};
+
 export const api = {
+  // Simulação de busca dos planos num "Banco de Dados Admin"
+  async getAvailablePlans(): Promise<SaaSPlan[]> {
+    return [
+      {
+        id: 'plan_free',
+        key: 'free',
+        price_brl: 0,
+        price_usd: 0,
+        is_contact: false,
+        has_trial: false,
+        features: ['feat_1_printer', 'feat_2_skus', 'feat_community_support'],
+        limits: { printers: 1, skus: 2 }
+      },
+      {
+        id: 'plan_basic',
+        key: 'basic',
+        price_brl: 49.90,
+        price_usd: 9.90,
+        is_contact: false,
+        has_trial: true,
+        features: ['feat_5_printers', 'feat_unlimited_skus', 'feat_email_support'],
+        limits: { printers: 5, skus: 'unlimited' }
+      },
+      {
+        id: 'plan_pro',
+        key: 'pro',
+        price_brl: 129.90,
+        price_usd: 29.90,
+        is_contact: false,
+        has_trial: true,
+        features: ['feat_unlimited_printers', 'feat_unlimited_skus', 'feat_priority_support', 'feat_api_access'],
+        limits: { printers: 'unlimited', skus: 'unlimited' }
+      },
+      {
+        id: 'plan_enterprise',
+        key: 'enterprise',
+        price_brl: 0,
+        price_usd: 0,
+        is_contact: true,
+        has_trial: false,
+        features: ['feat_custom_integration', 'feat_dedicated_manager', 'feat_sla'],
+        limits: { printers: 'unlimited', skus: 'unlimited' }
+      }
+    ];
+  },
+
+  // --- Mocks do SUPER ADMIN ---
+  async getAdminUsers() {
+    // Simula uma chamada ao Supabase passando por cima do RLS (Service Role)
+    return [
+      { id: 'usr_1', email: 'joao.silva@oficina3d.com', name: 'João Silva', plan: 'free', isCourtesy: false, trialEndsAt: null, revenue: 0, subscribedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'usr_2', email: 'contato@printmaster.com', name: 'Print Master', plan: 'basic', isCourtesy: false, trialEndsAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(), revenue: 49.90, subscribedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'usr_3', email: 'empresa@industria3d.com', name: 'Indústria 3D', plan: 'pro', isCourtesy: false, trialEndsAt: null, revenue: 129.90, subscribedAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'usr_4', email: 'parceiro@youtuber.com', name: 'Youtuber Tech', plan: 'pro', isCourtesy: true, trialEndsAt: null, revenue: 0, subscribedAt: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 'usr_5', email: 'mario@bros.com', name: 'Mario Bros', plan: 'basic', isCourtesy: false, trialEndsAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), revenue: 0, subscribedAt: new Date(Date.now() - 17 * 24 * 60 * 60 * 1000).toISOString() },
+    ];
+  },
+
+  async updateUserPlan(userId: string, data: { plan: string, isCourtesy: boolean, trialEndsAt: string | null }) {
+    // Simula atualização no DB (ex: supabase.from('user_settings').update(...).eq('id', userId))
+    return new Promise(resolve => setTimeout(resolve, 800));
+  },
+
   async getUserSettings(): Promise<UserSettings | null> {
     const supabase = createClient();
     const { data, error } = await supabase.from('user_settings').select('*').maybeSingle();

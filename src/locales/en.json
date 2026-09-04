@@ -5,7 +5,10 @@
     "productionQueue": "Production Queue",
     "catalog": "SKU Catalog",
     "inventory": "Inventory",
-    "settings": "Settings"
+    "settings": "Settings",
+    "billing": "Billing",
+    "admin": "Super Admin",
+    "logout": "Logout"
   },
   "home": {
     "title": "General Dashboard",
@@ -113,5 +116,34 @@
     "delete": "Delete",
     "edit": "Edit",
     "deleteConfirm": "Are you sure you want to delete this item?"
+  },
+  "billing": {
+    "title": "Subscription Plans",
+    "description": "Manage your printing farm limits and features.",
+    "currentPlan": "Your current plan:",
+    "startTrial": "Start 15-day Trial",
+    "upgrade": "Upgrade Plan",
+    "contactUs": "Contact Us",
+    "month": "/month",
+    "plans": {
+      "free": "Free",
+      "basic": "Basic",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
+    "features": {
+      "feat_1_printer": "Up to 1 printer",
+      "feat_2_skus": "Up to 2 products (SKUs)",
+      "feat_community_support": "Community Support",
+      "feat_5_printers": "Up to 5 printers",
+      "feat_unlimited_skus": "Unlimited SKUs",
+      "feat_email_support": "Email Support",
+      "feat_unlimited_printers": "Unlimited printers",
+      "feat_priority_support": "Priority Support (24/7)",
+      "feat_api_access": "API Access",
+      "feat_custom_integration": "Custom Integrations",
+      "feat_dedicated_manager": "Dedicated Account Manager",
+      "feat_sla": "99.9% Uptime SLA"
+    }
   }
 }
