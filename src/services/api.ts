@@ -49,6 +49,25 @@ export const api = {
     return data;
   },
 
+  async updateUserSettings(settings: Partial<UserSettings>): Promise<UserSettings> {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+    
+    const { data, error } = await supabase
+      .from('user_settings')
+      .update(settings)
+      .eq('id', user.id)
+      .select()
+      .single();
+      
+    if (error) {
+      console.error('Error updating user settings:', error.message, error.details, error.hint);
+      throw error;
+    }
+    return data;
+  },
+
   async getSKUs(): Promise<SKU[]> {
     const supabase = createClient();
     const { data, error } = await supabase.from('skus').select('*').order('created_at', { ascending: false });

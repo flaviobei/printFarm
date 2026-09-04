@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getDictionary } from '@/lib/i18n';
+import { useDictionary } from '@/lib/i18n';
 import { api, SKU, UserSettings } from '@/services/api';
 import { calculatePrintCost, CostParameters } from '@/services/cost-calculator';
 import { Edit2, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
+import { toast } from 'sonner';
 
 export default function CatalogoPage() {
-  const dict = getDictionary();
+  const { dict } = useDictionary();
   const catDict = dict.catalogo;
   const [skus, setSkus] = useState<SKU[]>([]);
   const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -75,7 +76,7 @@ export default function CatalogoPage() {
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error saving SKU:', error);
-      alert('Erro ao salvar produto.');
+      toast.error('Erro ao salvar produto.');
     } finally {
       setIsSubmitting(false);
     }
@@ -88,7 +89,7 @@ export default function CatalogoPage() {
       await loadData();
     } catch (error) {
       console.error('Error deleting SKU:', error);
-      alert('Erro ao deletar produto. Ele pode estar atrelado a um pedido existente.');
+      toast.error('Erro ao deletar produto. Ele pode estar atrelado a um pedido existente.');
     }
   };
 

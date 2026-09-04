@@ -65,6 +65,26 @@
       "critical": "Crítico"
     }
   },
+  "settings": {
+    "title": "Configurações da Máquina",
+    "description": "Ajuste as variáveis usadas para calcular os custos da sua operação.",
+    "energy": {
+      "title": "Preço da Energia (por kWh)",
+      "desc": "Verifique na sua conta de luz local."
+    },
+    "power": {
+      "title": "Consumo Médio da Impressora (Watts)",
+      "desc": "Geralmente entre 200W-300W durante a impressão."
+    },
+    "failure": {
+      "title": "Taxa de Falha (%)",
+      "desc": "Margem de erro para impressões perdidas."
+    },
+    "fee": {
+      "title": "Taxa do Marketplace (%)",
+      "desc": "Taxa média cobrada pelas plataformas de venda."
+    }
+  },
   "forms": {
     "addSku": "Adicionar Produto",
     "addOrder": "Novo Pedido",

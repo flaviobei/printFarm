@@ -1,0 +1,117 @@
+{
+  "sidebar": {
+    "title": "printFarm",
+    "dashboard": "Dashboard",
+    "productionQueue": "Production Queue",
+    "catalog": "SKU Catalog",
+    "inventory": "Inventory",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "General Dashboard",
+    "description": "Overview of your operation, revenue, and capacity.",
+    "kpis": {
+      "revenue": "Revenue",
+      "profit": "Estimated Profit",
+      "pendingOrders": "Pending Orders",
+      "activePrinters": "Active Printers"
+    },
+    "charts": {
+      "revenueLabel": "Gross Revenue ($)",
+      "profitLabel": "Real Profit ($)",
+      "chartTitle": "Revenue and Profit per Product"
+    }
+  },
+  "pedidos": {
+    "title": "Production Queue",
+    "description": "Track and manage your production queue.",
+    "columns": {
+      "pending": "Awaiting Production",
+      "printing": "Printing",
+      "finishing": "Finishing",
+      "ready": "Ready to Ship",
+      "shipped": "Shipped"
+    },
+    "cards": {
+      "deadline": "Deadline:"
+    }
+  },
+  "catalogo": {
+    "title": "SKU Catalog",
+    "description": "Manage your products, print parameters, and track real profit.",
+    "table": {
+      "name": "Name / Product",
+      "material": "Material",
+      "specs": "Specifications",
+      "salePrice": "Sale Price",
+      "netProfit": "Net Profit",
+      "margin": "Margin",
+      "actions": "Actions"
+    }
+  },
+  "estoque": {
+    "title": "Filament Inventory",
+    "description": "Manage your filament spools, consumption, and restock needs.",
+    "table": {
+      "type": "Type",
+      "color": "Color",
+      "remaining": "Remaining (g)",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "ok": "Normal",
+      "low": "Low",
+      "critical": "Critical"
+    }
+  },
+  "settings": {
+    "title": "Machine Settings",
+    "description": "Adjust the variables used to calculate your operation's costs.",
+    "energy": {
+      "title": "Energy Price (per kWh)",
+      "desc": "Check your local electricity bill."
+    },
+    "power": {
+      "title": "Average Printer Consumption (Watts)",
+      "desc": "Usually 200W-300W while printing."
+    },
+    "failure": {
+      "title": "Failure Rate (%)",
+      "desc": "Margin of error for failed prints."
+    },
+    "fee": {
+      "title": "Marketplace Fee (%)",
+      "desc": "Average fee charged by sales platforms."
+    }
+  },
+  "forms": {
+    "addSku": "Add Product",
+    "addOrder": "New Order",
+    "addInventory": "New Filament Spool",
+    "sku": {
+      "name": "Product Name",
+      "material": "Material (e.g., PLA, PETG)",
+      "weight": "Weight Used (in grams)",
+      "printTime": "Print Time (in hours)",
+      "salePrice": "Sale Price ($)"
+    },
+    "order": {
+      "sku": "Product",
+      "customerName": "Customer Name",
+      "deadline": "Deadline"
+    },
+    "inventory": {
+      "material": "Material",
+      "color": "Color",
+      "grams": "Initial Weight (grams)"
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "deleteConfirm": "Are you sure you want to delete this item?"
+  }
+}

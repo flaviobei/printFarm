@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getDictionary } from '@/lib/i18n';
+import { useDictionary } from '@/lib/i18n';
 import { api, Order, SKU, UserSettings } from '@/services/api';
 import { calculatePrintCost, CostParameters } from '@/services/cost-calculator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,8 @@ import { DollarSign, TrendingUp, Package, Printer, Database } from 'lucide-react
 import { createClient } from '@/lib/supabase/client';
 
 export default function Home() {
-  const dict = getDictionary().home;
+  const { dict: fullDict } = useDictionary();
+  const dict = fullDict.home;
   
   const [orders, setOrders] = useState<Order[]>([]);
   const [skus, setSkus] = useState<SKU[]>([]);

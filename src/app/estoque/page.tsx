@@ -1,14 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getDictionary } from '@/lib/i18n';
+import { useDictionary } from '@/lib/i18n';
 import { api, Inventory } from '@/services/api';
 import { AlertTriangle, CheckCircle, Edit2, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
+import { toast } from 'sonner';
 
 export default function EstoquePage() {
-  const dict = getDictionary();
+  const { dict } = useDictionary();
   const estDict = dict.estoque;
   const [inventory, setInventory] = useState<Inventory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,7 +61,7 @@ export default function EstoquePage() {
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error saving Inventory:', error);
-      alert('Erro ao salvar rolo de filamento.');
+      toast.error('Erro ao salvar rolo de filamento.');
     } finally {
       setIsSubmitting(false);
     }
@@ -73,7 +74,7 @@ export default function EstoquePage() {
       await loadData();
     } catch (error) {
       console.error('Error deleting Inventory:', error);
-      alert('Erro ao deletar rolo de filamento.');
+      toast.error('Erro ao deletar rolo de filamento.');
     }
   };
 
