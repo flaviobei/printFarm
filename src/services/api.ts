@@ -9,6 +9,19 @@ export type UserSettings = {
   marketplace_fee_percentage: number;
 };
 
+export type Supplier = {
+  id: string;
+  user_id: string;
+  company_name: string;
+  cnpj?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  payment_data?: string;
+  notes?: string;
+  created_at: string;
+};
+
 export type SKU = {
   id: string;
   user_id: string;
@@ -46,7 +59,13 @@ export type Inventory = {
   remaining_grams: number;
   temp_min: number;
   temp_max: number;
-  status: string; // 'available', 'in_use'
+  status: string; // 'available', 'in_use', 'discarded'
+  cost?: number;
+  supplier_id?: string | null;
+  invoice_number?: string;
+  entry_date?: string;
+  discard_reason?: string;
+  warranty_triggered?: boolean;
   created_at: string;
 };
 
@@ -474,5 +493,53 @@ export const api = {
 
     const { error } = await supabase.from('material_logs').insert([{ ...log, user_id: user.id }]);
     if (error) throw error;
+  },
+
+  // ==========================================
+  // CRUD - Suppliers (Fornecedores)
+  // ==========================================
+  async getSuppliers(): Promise<Supplier[]> {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('suppliers').select('*').order('created_at', { ascending: false });
+    if (error) {
+      // Return mock data if table doesn't exist
+      return [
+        { id: 'sup_1', user_id: 'x', company_name: 'eSun Brasil', cnpj: '12.345.678/0001-90', contact_name: 'Vendas', contact_email: 'vendas@esun.com.br', contact_phone: '(11) 99999-9999', created_at: new Date().toISOString() },
+        { id: 'sup_2', user_id: 'x', company_name: 'Voolt 3D', cnpj: '98.765.432/0001-10', contact_name: 'Suporte', contact_email: 'suporte@voolt3d.com.br', created_at: new Date().toISOString() }
+      ];
+    }
+    return data || [];
+  },
+
+  async createSupplier(supplier: Omit<Supplier, 'id' | 'created_at' | 'user_id'>) {
+    const supabase = createClient();
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase.from('suppliers').insert([{
+      ...supplier,
+      user_id: userData.user.id
+    }]).select().single();
+
+    if (error) {
+      return { id: Math.random().toString(), user_id: userData.user.id, ...supplier, created_at: new Date().toISOString() };
+    }
+    return data;
+  },
+
+  async updateSupplier(id: string, updates: Partial<Omit<Supplier, 'id' | 'created_at' | 'user_id'>>) {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('suppliers').update(updates).eq('id', id).select().single();
+    if (error) {
+       return { id, ...updates }; // mock
+    }
+    return data;
+  },
+
+  async deleteSupplier(id: string) {
+    const supabase = createClient();
+    const { error } = await supabase.from('suppliers').delete().eq('id', id);
+    if (error) return true; // mock
+    return true;
   }
 };

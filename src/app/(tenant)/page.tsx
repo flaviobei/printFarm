@@ -6,8 +6,10 @@ import { api, Order, SKU, UserSettings } from '@/services/api';
 import { calculatePrintCost, CostParameters } from '@/services/cost-calculator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { DollarSign, TrendingUp, Package, Printer, Database, Clock, Play, CheckCircle, Wrench } from 'lucide-react';
+import { DollarSign, TrendingUp, Package, Printer, Database, Clock, Play, CheckCircle, Wrench, LayoutDashboard } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { PageLayout } from '@/components/ui/PageLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function Home() {
   const { dict: fullDict } = useDictionary();
@@ -58,16 +60,16 @@ export default function Home() {
     return (
       <div className="p-8 h-full flex flex-col items-center justify-center text-center">
         <Database className="w-16 h-16 text-muted-foreground mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Banco de Dados Vazio</h2>
+        <h2 className="text-2xl font-bold mb-2">{dict.seed.title}</h2>
         <p className="text-muted-foreground max-w-md mb-8">
-          Parece que você acabou de configurar o Supabase. Deseja injetar os dados de demonstração (Dragão, Vaso, Pedidos e Estoque) para ver o sistema funcionando?
+          {dict.seed.desc}
         </p>
         <button 
           onClick={handleSeedDatabase}
           disabled={isSeeding}
           className="bg-primary text-primary-foreground px-6 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
-          {isSeeding ? 'Injetando Dados...' : 'Popular Banco de Dados'}
+          {isSeeding ? dict.seed.buttonLoading : dict.seed.button}
         </button>
       </div>
     );
@@ -123,15 +125,16 @@ export default function Home() {
   const formatBRL = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
   if (isLoading) {
-    return <div className="p-8 flex items-center justify-center h-full">Carregando dados...</div>;
+    return <div className="p-8 flex items-center justify-center h-full">{dict.loading}</div>;
   }
 
   return (
-    <div className="p-6 h-full flex flex-col gap-6 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{dict.title}</h1>
-        <p className="text-muted-foreground mt-1">{dict.description}</p>
-      </div>
+    <PageLayout className="gap-6">
+      <PageHeader 
+        title={dict.title} 
+        subtitle={dict.description} 
+        icon={<LayoutDashboard className="w-8 h-8 mr-3 text-primary" />} 
+      />
 
       {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -142,7 +145,7 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatBRL(totalRevenue)}</div>
-            <p className="text-xs text-muted-foreground">+20.1% em relação ao mês passado</p>
+            <p className="text-xs text-muted-foreground">{dict.kpis.revenueSub}</p>
           </CardContent>
         </Card>
         <Card>
@@ -152,27 +155,27 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600 dark:text-green-500">{formatBRL(totalProfit)}</div>
-            <p className="text-xs text-muted-foreground">Lucro real descontando custos</p>
+            <p className="text-xs text-muted-foreground">{dict.kpis.profitSub}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Produção</CardTitle>
+            <CardTitle className="text-sm font-medium">{dict.kpis.productionTitle}</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{orders.filter(o => ['pending', 'printing', 'finishing'].includes(o.status)).length}</div>
             <div className="flex flex-col gap-2 mt-3 pt-3 border-t">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1.5" /> Em Espera</div>
+                <div className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1.5" /> {dict.production.waiting}</div>
                 <span className="font-medium text-slate-700 dark:text-slate-300">{orders.filter(o => o.status === 'pending').length}</span>
               </div>
               <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
-                <div className="flex items-center"><Play className="w-3.5 h-3.5 mr-1.5" /> Imprimindo</div>
+                <div className="flex items-center"><Play className="w-3.5 h-3.5 mr-1.5" /> {dict.production.printing}</div>
                 <span className="font-bold">{orders.filter(o => o.status === 'printing').length}</span>
               </div>
               <div className="flex items-center justify-between text-xs text-amber-600 dark:text-amber-400">
-                <div className="flex items-center"><CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Acabamento</div>
+                <div className="flex items-center"><CheckCircle className="w-3.5 h-3.5 mr-1.5" /> {dict.production.finishing}</div>
                 <span className="font-bold">{orders.filter(o => o.status === 'finishing').length}</span>
               </div>
             </div>
@@ -180,22 +183,22 @@ export default function Home() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Impressoras</CardTitle>
+            <CardTitle className="text-sm font-medium">{dict.kpis.printersTitle}</CardTitle>
             <Printer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{printers.length}</div>
             <div className="flex flex-col gap-2 mt-3 pt-3 border-t">
               <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
-                <div className="flex items-center"><Play className="w-3.5 h-3.5 mr-1.5" /> Imprimindo</div>
+                <div className="flex items-center"><Play className="w-3.5 h-3.5 mr-1.5" /> {dict.printers.printing}</div>
                 <span className="font-bold">{printers.filter(p => p.status === 'printing').length}</span>
               </div>
               <div className="flex items-center justify-between text-xs text-green-600 dark:text-green-500">
-                <div className="flex items-center"><CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Livres</div>
+                <div className="flex items-center"><CheckCircle className="w-3.5 h-3.5 mr-1.5" /> {dict.printers.idle}</div>
                 <span className="font-bold">{printers.filter(p => p.status === 'idle').length}</span>
               </div>
               <div className="flex items-center justify-between text-xs text-red-600 dark:text-red-400">
-                <div className="flex items-center"><Wrench className="w-3.5 h-3.5 mr-1.5" /> Manutenção</div>
+                <div className="flex items-center"><Wrench className="w-3.5 h-3.5 mr-1.5" /> {dict.printers.maintenance}</div>
                 <span className="font-bold">{printers.filter(p => p.status === 'maintenance').length}</span>
               </div>
             </div>
@@ -225,6 +228,6 @@ export default function Home() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageLayout>
   );
 }

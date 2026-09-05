@@ -10,7 +10,8 @@
     "settings": "Configurações",
     "billing": "Assinaturas",
     "admin": "Super Admin",
-    "logout": "Sair"
+    "logout": "Sair",
+    "suppliers": "Fornecedores"
   },
   "home": {
     "title": "Dashboard Geral",
@@ -19,13 +20,34 @@
       "revenue": "Faturamento",
       "profit": "Lucro Estimado",
       "pendingOrders": "Pedidos Pendentes",
-      "activePrinters": "Impressoras Ativas"
+      "activePrinters": "Impressoras Ativas",
+      "revenueSub": "+20.1% em relação ao mês passado",
+      "profitSub": "Lucro real descontando custos",
+      "productionTitle": "Produção",
+      "printersTitle": "Impressoras"
     },
     "charts": {
       "revenueLabel": "Receita Bruta (R$)",
       "profitLabel": "Lucro Real (R$)",
       "chartTitle": "Receita e Lucro por Produto"
-    }
+    },
+    "seed": {
+      "title": "Banco de Dados Vazio",
+      "desc": "Parece que você acabou de configurar o Supabase. Deseja injetar os dados de demonstração (Dragão, Vaso, Pedidos e Estoque) para ver o sistema funcionando?",
+      "button": "Popular Banco de Dados",
+      "buttonLoading": "Injetando Dados..."
+    },
+    "production": {
+      "waiting": "Em Espera",
+      "printing": "Imprimindo",
+      "finishing": "Acabamento"
+    },
+    "printers": {
+      "printing": "Imprimindo",
+      "idle": "Livres",
+      "maintenance": "Manutenção"
+    },
+    "loading": "Carregando dados..."
   },
   "pedidos": {
     "title": "Fila de Produção",
@@ -78,7 +100,10 @@
     },
     "loading": "Carregando fila...",
     "selectSku": "Selecione um produto do catálogo...",
-    "statusLabel": "Status Atual"
+    "statusLabel": "Status Atual",
+    "emptyColumn": "Vazio",
+    "unknown": "Desconhecido",
+    "removedProduct": "Produto Removido"
   },
   "catalogo": {
     "title": "Catálogo de SKUs",
@@ -140,7 +165,11 @@
       "color": "Cor",
       "remaining": "Restante (g)",
       "status": "Status",
-      "actions": "Ações"
+      "actions": "Ações",
+      "rollId": "ID do Rolo",
+      "remainingGas": "Restante (Gasto)",
+      "logistics": "Status Logístico",
+      "sealedBadge": "LACRADO"
     },
     "status": {
       "ok": "Normal",
@@ -150,18 +179,94 @@
     "form": {
       "usageStatus": "Status de Uso",
       "available": "Disponível no Estoque",
-      "inUse": "Em Uso (Checkout)"
+      "inUse": "Em Uso (Checkout)",
+      "editProfile": "Editar Perfil / Rolo",
+      "createProfile": "Criar Novo Perfil / Rolo",
+      "material": "Material",
+      "brand": "Marca",
+      "colorName": "Nome da Cor",
+      "colorHex": "Cor Visual (HEX)",
+      "initialWeight": "Peso Inicial (g)",
+      "remainingWeight": "Restante (g)",
+      "tempMin": "Temp. Mínima (°C)",
+      "tempMax": "Temp. Máxima (°C)",
+      "supplier": "Fornecedor (Opcional)",
+      "noSupplier": "Nenhum fornecedor cadastrado",
+      "invoiceNumber": "Nota Fiscal / Recibo",
+      "entryDate": "Data de Entrada",
+      "cost": "Custo Unitário (R$)"
     },
     "batch": {
       "intro": "Você está dando entrada no material:",
       "sealedWeight": "Peso Lacrado Padrão",
       "howManySpools": "Quantos rolos idênticos acabaram de chegar?",
-      "instanceTip": "Serão criadas instâncias independentes para rastreio exato."
+      "instanceTip": "Serão criadas instâncias independentes para rastreio exato.",
+      "title": "Dar Entrada de Lote (Rolos Lacrados)",
+      "cancel": "Cancelar",
+      "generating": "Gerando Instâncias...",
+      "generate": "Gerar Instâncias no Estoque",
+      "supplier": "Fornecedor",
+      "invoiceNumber": "Nota Fiscal (NF)",
+      "entryDate": "Data da Compra / Entrada",
+      "cost": "Custo por Rolo (R$)"
+    },
+    "subtitle": "Gestão de Perfil de Materiais e Instâncias (Rolos)",
+    "newProfile": "Novo Perfil/Rolo",
+    "noProfiles": "Nenhum perfil de material cadastrado no momento.",
+    "total": "Total:",
+    "sealed": "Lacrados",
+    "open": "Abertos",
+    "inUse": "Em Uso",
+    "addBatch": "+ Lote",
+    "hideRolls": "Ocultar Rolos ▲",
+    "showRolls": "Ver Rolos ▼",
+    "loading": "Carregando estoque...",
+    "actions": {
+      "qr": "Gerar Etiqueta QR",
+      "returnToStock": "Devolver ao Estoque",
+      "putInUse": "Colocar em Uso (Manual)",
+      "editWeight": "Editar Peso Manualmente",
+      "discard": "Descartar / Defeito"
+    },
+    "qr": {
+      "title": "Rastreio do Rolo (QR Code)",
+      "close": "Fechar",
+      "print": "Imprimir Etiqueta"
+    },
+    "discard": {
+      "title": "Descartar Rolo / Defeito",
+      "desc": "Informe os detalhes do problema para o registro.",
+      "reason": "Motivo do Descarte",
+      "reasons": {
+        "moisture": "Umidade Excessiva",
+        "brittle": "Quebradiço / Ressecado",
+        "inconsistent": "Inconsistência de Diâmetro",
+        "tangled": "Nó no Rolo (Emaranhado)",
+        "other": "Outro"
+      },
+      "quantity": "Quantidade Descartada (g)",
+      "triggerWarranty": "Acionar Garantia (Exibir dados do Fornecedor)",
+      "confirm": "Confirmar Descarte",
+      "warrantyTitle": "Dados para Acionar Garantia",
+      "warrantyDesc": "Use os dados abaixo para contatar o fornecedor sobre o lote defeituoso.",
+      "warrantyEmail": "Email",
+      "warrantyPhone": "Telefone",
+      "warrantyInvoice": "Nota Fiscal / Recibo",
+      "warrantyEntry": "Data da Compra",
+      "warrantyClose": "Entendido, fechar"
     }
   },
   "historico": {
-    "title": "Histórico de Pedidos",
-    "description": "Consulte o histórico completo de pedidos entregues.",
+    "title": "Histórico de Entregas",
+    "subtitle": "Consulte todos os pedidos finalizados e entregues da sua PrintFarm.",
+    "searchPlaceholder": "Buscar por cliente, pedido ou produto...",
+    "orderSingular": "Pedido",
+    "orderPlural": "Pedidos",
+    "loading": "Carregando histórico...",
+    "noOrdersTitle": "Nenhum pedido entregue ainda",
+    "noOrdersDesc": "Os pedidos aparecerão aqui quando forem finalizados no Kanban.",
+    "unknown": "Desconhecido",
+    "delivered": "Entregue",
     "table": {
       "orderId": "ID Pedido",
       "customer": "Cliente",
@@ -169,11 +274,7 @@
       "createdAt": "Data de Criação",
       "finalStatus": "Status Final"
     },
-    "loading": "Carregando histórico...",
-    "noOrders": "Nenhum pedido entregue ainda",
-    "noOrdersTip": "Os pedidos aparecerão aqui quando forem finalizados no Kanban.",
-    "delivered": "Entregue",
-    "search": "Buscar por cliente ou produto..."
+    "locale": "pt-BR"
   },
   "settings": {
     "title": "Configurações da Máquina",
@@ -193,7 +294,8 @@
     "fee": {
       "title": "Taxa do Marketplace (%)",
       "desc": "Taxa média cobrada pelas plataformas de venda."
-    }
+    },
+    "loading": "Carregando configurações..."
   },
   "forms": {
     "addSku": "Adicionar Produto",
@@ -254,7 +356,11 @@
       "feat_custom_integration": "Integrações Customizadas",
       "feat_dedicated_manager": "Gerente de Conta Dedicado",
       "feat_sla": "SLA de 99.9% Uptime"
-    }
+    },
+    "loading": "Carregando planos...",
+    "mostPopular": "Mais Popular",
+    "processing": "Processando...",
+    "currentPlanBtn": "Plano Atual"
   },
   "toast": {
     "productionStarted": "Produção Iniciada!",
@@ -277,6 +383,54 @@
     "imageUploadError": "Erro ao fazer upload da imagem.",
     "exportSuccess": "SKUs exportados com sucesso!",
     "importComplete": "Importação concluída",
-    "importEmpty": "Arquivo CSV vazio ou sem dados."
+    "importEmpty": "Arquivo CSV vazio ou sem dados.",
+    "invalidMove": "Movimento inválido: Não é possível retroceder a partir desta etapa.",
+    "rollInUse": "Carretel em uso!",
+    "rollReturned": "Carretel devolvido ao estoque!",
+    "rollStatusError": "Erro ao atualizar status do carretel.",
+    "rollSaved": "Carretel salvo com sucesso!",
+    "rollSaveError": "Erro ao salvar rolo de filamento.",
+    "invalidQuantity": "Quantidade inválida (1-50).",
+    "batchAdded": "rolo(s) adicionado(s) com sucesso!",
+    "batchError": "Erro ao adicionar lote de rolos.",
+    "rollDeleted": "Carretel removido com sucesso!",
+    "rollDeleteError": "Erro ao deletar rolo de filamento.",
+    "settingsSaved": "Configurações salvas com sucesso!",
+    "settingsError": "Erro ao salvar as configurações.",
+    "checkoutLoading": "Redirecionando para checkout seguro (Stripe)...",
+    "checkoutSuccess": "Mock: Redirecionamento completo! (Em produção, o usuário sairia da tela)",
+    "checkoutError": "Erro ao redirecionar.",
+    "discarded": "Descarte registrado com sucesso!"
+  },
+  "suppliers": {
+    "title": "Fornecedores",
+    "subtitle": "Gerencie os fornecedores de filamentos e outros insumos.",
+    "searchPlaceholder": "Buscar fornecedor por nome ou CNPJ...",
+    "addSupplier": "Novo Fornecedor",
+    "loading": "Carregando fornecedores...",
+    "noSuppliersTitle": "Nenhum fornecedor cadastrado",
+    "noSuppliersDesc": "Você ainda não cadastrou nenhum fornecedor. Adicione o primeiro!",
+    "form": {
+      "createTitle": "Cadastrar Fornecedor",
+      "editTitle": "Editar Fornecedor",
+      "companyName": "Nome da Empresa",
+      "cnpj": "CNPJ",
+      "contactName": "Nome do Contato",
+      "contactEmail": "Email",
+      "contactPhone": "Telefone",
+      "paymentData": "Dados Bancários / Pagamento",
+      "notes": "Anotações (Opcional)"
+    },
+    "table": {
+      "company": "Empresa",
+      "contact": "Contato",
+      "actions": "Ações"
+    },
+    "toast": {
+      "created": "Fornecedor cadastrado com sucesso!",
+      "updated": "Fornecedor atualizado!",
+      "deleted": "Fornecedor removido.",
+      "error": "Erro ao salvar fornecedor."
+    }
   }
 }

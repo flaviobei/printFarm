@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useDictionary } from '@/lib/i18n';
 import { api, UserSettings } from '@/services/api';
-import { Settings, Zap, Printer, AlertTriangle, Percent } from 'lucide-react';
+import { Settings as SettingsIcon, Zap, Printer, AlertTriangle, Percent } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageLayout } from '@/components/ui/PageLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function ConfiguracoesPage() {
   const { dict } = useDictionary();
@@ -39,17 +41,17 @@ export default function ConfiguracoesPage() {
     try {
       const updated = await api.updateUserSettings(data);
       setSettings(updated);
-      alert('Configurações salvas com sucesso!');
+      toast.success(dict?.toast?.settingsSaved || 'Configurações salvas com sucesso!');
     } catch (error) {
       console.error(error);
-      alert('Erro ao salvar as configurações.');
+      toast.error(dict?.toast?.settingsError || 'Erro ao salvar as configurações.');
     } finally {
       setIsSaving(false);
     }
   };
 
   if (isLoading) {
-    return <div className="p-8 flex items-center justify-center h-full">Carregando configurações...</div>;
+    return <div className="p-8 flex items-center justify-center h-full">{setDict?.loading || 'Carregando configurações...'}</div>;
   }
 
   // Fallback defaults se não existir configuração salva
@@ -61,13 +63,12 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <div className="p-6 h-full flex flex-col max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{setDict.title}</h1>
-          <p className="text-muted-foreground mt-1">{setDict.description}</p>
-        </div>
-      </div>
+    <PageLayout>
+      <PageHeader 
+        title={setDict.title}
+        subtitle={setDict.description}
+        icon={<SettingsIcon className="w-8 h-8 mr-3 text-primary" />}
+      />
 
       <div className="rounded-md border bg-card text-card-foreground shadow-sm">
         <form onSubmit={handleSave} className="p-6 space-y-8">
@@ -164,11 +165,11 @@ export default function ConfiguracoesPage() {
               disabled={isSaving}
               className="bg-primary text-primary-foreground px-6 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center"
             >
-              {isSaving ? 'Salvando...' : dict.common.save}
+              {isSaving ? dict?.common?.loading || 'Salvando...' : dict?.common?.save}
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </PageLayout>
   );
 }

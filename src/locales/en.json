@@ -10,7 +10,8 @@
     "settings": "Settings",
     "billing": "Billing",
     "admin": "Super Admin",
-    "logout": "Logout"
+    "logout": "Logout",
+    "suppliers": "Suppliers"
   },
   "home": {
     "title": "General Dashboard",
@@ -19,13 +20,34 @@
       "revenue": "Revenue",
       "profit": "Estimated Profit",
       "pendingOrders": "Pending Orders",
-      "activePrinters": "Active Printers"
+      "activePrinters": "Active Printers",
+      "revenueSub": "+20.1% compared to last month",
+      "profitSub": "Real profit discounting costs",
+      "productionTitle": "Production",
+      "printersTitle": "Printers"
     },
     "charts": {
       "revenueLabel": "Gross Revenue ($)",
       "profitLabel": "Real Profit ($)",
       "chartTitle": "Revenue and Profit per Product"
-    }
+    },
+    "seed": {
+      "title": "Empty Database",
+      "desc": "It looks like you just set up Supabase. Do you want to inject demo data (Dragon, Vase, Orders, and Inventory) to see the system in action?",
+      "button": "Populate Database",
+      "buttonLoading": "Injecting Data..."
+    },
+    "production": {
+      "waiting": "Waiting",
+      "printing": "Printing",
+      "finishing": "Finishing"
+    },
+    "printers": {
+      "printing": "Printing",
+      "idle": "Idle",
+      "maintenance": "Maintenance"
+    },
+    "loading": "Loading data..."
   },
   "pedidos": {
     "title": "Production Queue",
@@ -78,7 +100,10 @@
     },
     "loading": "Loading queue...",
     "selectSku": "Select a product from the catalog...",
-    "statusLabel": "Current Status"
+    "statusLabel": "Current Status",
+    "emptyColumn": "Empty",
+    "unknown": "Unknown",
+    "removedProduct": "Product Removed"
   },
   "catalogo": {
     "title": "SKU Catalog",
@@ -140,7 +165,11 @@
       "color": "Color",
       "remaining": "Remaining (g)",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "rollId": "Spool ID",
+      "remainingGas": "Remaining (Spent)",
+      "logistics": "Logistics Status",
+      "sealedBadge": "SEALED"
     },
     "status": {
       "ok": "Normal",
@@ -150,30 +179,102 @@
     "form": {
       "usageStatus": "Usage Status",
       "available": "Available in Stock",
-      "inUse": "In Use (Checkout)"
+      "inUse": "In Use (Checkout)",
+      "editProfile": "Edit Profile / Spool",
+      "createProfile": "Create New Profile / Spool",
+      "material": "Material",
+      "brand": "Brand",
+      "colorName": "Color Name",
+      "colorHex": "Visual Color (HEX)",
+      "initialWeight": "Initial Weight (g)",
+      "remainingWeight": "Remaining (g)",
+      "tempMin": "Min Temp (°C)",
+      "tempMax": "Max Temp (°C)",
+      "supplier": "Supplier (Optional)",
+      "noSupplier": "No supplier registered",
+      "invoiceNumber": "Invoice Number",
+      "entryDate": "Entry Date",
+      "cost": "Unit Cost ($)"
     },
     "batch": {
       "intro": "You are receiving the material:",
       "sealedWeight": "Standard Sealed Weight",
       "howManySpools": "How many identical spools just arrived?",
-      "instanceTip": "Individual instances will be created for exact tracking."
+      "instanceTip": "Individual instances will be created for exact tracking.",
+      "title": "Enter Batch (Sealed Spools)",
+      "cancel": "Cancel",
+      "generating": "Generating Instances...",
+      "generate": "Generate Instances in Stock",
+      "supplier": "Supplier",
+      "invoiceNumber": "Invoice (NF)",
+      "entryDate": "Purchase / Entry Date",
+      "cost": "Cost per Roll ($)"
+    },
+    "subtitle": "Material Profile and Instances (Spools) Management",
+    "newProfile": "New Profile/Spool",
+    "noProfiles": "No material profiles registered at the moment.",
+    "total": "Total:",
+    "sealed": "Sealed",
+    "open": "Open",
+    "inUse": "In Use",
+    "addBatch": "+ Batch",
+    "hideRolls": "Hide Spools ▲",
+    "showRolls": "Show Spools ▼",
+    "loading": "Loading inventory...",
+    "actions": {
+      "qr": "Generate QR Label",
+      "returnToStock": "Return to Stock",
+      "putInUse": "Put in Use (Manual)",
+      "editWeight": "Edit Weight Manually",
+      "discard": "Discard / Defect"
+    },
+    "qr": {
+      "title": "Spool Tracking (QR Code)",
+      "close": "Close",
+      "print": "Print Label"
+    },
+    "discard": {
+      "title": "Discard Roll / Defect",
+      "desc": "Provide details about the issue for the log.",
+      "reason": "Reason for Discard",
+      "reasons": {
+        "moisture": "Excessive Moisture",
+        "brittle": "Brittle / Dry",
+        "inconsistent": "Diameter Inconsistency",
+        "tangled": "Tangled Spool",
+        "other": "Other"
+      },
+      "quantity": "Discarded Quantity (g)",
+      "triggerWarranty": "Trigger Warranty (Show Supplier details)",
+      "confirm": "Confirm Discard",
+      "warrantyTitle": "Warranty Claim Details",
+      "warrantyDesc": "Use the details below to contact the supplier regarding the defective batch.",
+      "warrantyEmail": "Email",
+      "warrantyPhone": "Phone",
+      "warrantyInvoice": "Invoice Number",
+      "warrantyEntry": "Purchase Date",
+      "warrantyClose": "Understood, close"
     }
   },
   "historico": {
-    "title": "Order History",
-    "description": "View the complete history of delivered orders.",
+    "title": "Delivery History",
+    "subtitle": "Check all finished and delivered orders from your PrintFarm.",
+    "searchPlaceholder": "Search by customer, order or product...",
+    "orderSingular": "Order",
+    "orderPlural": "Orders",
+    "loading": "Loading history...",
+    "noOrdersTitle": "No delivered orders yet",
+    "noOrdersDesc": "Orders will appear here once finished in the Kanban.",
+    "unknown": "Unknown",
+    "delivered": "Delivered",
     "table": {
       "orderId": "Order ID",
       "customer": "Customer",
       "product": "Product (SKU)",
-      "createdAt": "Created At",
+      "createdAt": "Creation Date",
       "finalStatus": "Final Status"
     },
-    "loading": "Loading history...",
-    "noOrders": "No delivered orders yet",
-    "noOrdersTip": "Orders will appear here when finalized in the Kanban.",
-    "delivered": "Delivered",
-    "search": "Search by customer or product..."
+    "locale": "en-US"
   },
   "settings": {
     "title": "Machine Settings",
@@ -193,7 +294,8 @@
     "fee": {
       "title": "Marketplace Fee (%)",
       "desc": "Average fee charged by sales platforms."
-    }
+    },
+    "loading": "Loading settings..."
   },
   "forms": {
     "addSku": "Add Product",
@@ -254,7 +356,11 @@
       "feat_custom_integration": "Custom Integrations",
       "feat_dedicated_manager": "Dedicated Account Manager",
       "feat_sla": "99.9% Uptime SLA"
-    }
+    },
+    "loading": "Loading plans...",
+    "mostPopular": "Most Popular",
+    "processing": "Processing...",
+    "currentPlanBtn": "Current Plan"
   },
   "toast": {
     "productionStarted": "Production Started!",
@@ -277,6 +383,54 @@
     "imageUploadError": "Error uploading image.",
     "exportSuccess": "SKUs exported successfully!",
     "importComplete": "Import complete",
-    "importEmpty": "CSV file is empty or has no data."
+    "importEmpty": "CSV file is empty or has no data.",
+    "invalidMove": "Invalid move: Cannot go back from this stage.",
+    "rollInUse": "Spool in use!",
+    "rollReturned": "Spool returned to stock!",
+    "rollStatusError": "Error updating spool status.",
+    "rollSaved": "Spool saved successfully!",
+    "rollSaveError": "Error saving spool.",
+    "invalidQuantity": "Invalid quantity (1-50).",
+    "batchAdded": "spool(s) added successfully!",
+    "batchError": "Error adding spool batch.",
+    "rollDeleted": "Spool removed successfully!",
+    "rollDeleteError": "Error deleting spool.",
+    "settingsSaved": "Settings saved successfully!",
+    "settingsError": "Error saving settings.",
+    "checkoutLoading": "Redirecting to secure checkout (Stripe)...",
+    "checkoutSuccess": "Mock: Redirect complete! (In production, the user would leave the screen)",
+    "checkoutError": "Error redirecting.",
+    "discarded": "Discard registered successfully!"
+  },
+  "suppliers": {
+    "title": "Suppliers",
+    "subtitle": "Manage suppliers for filaments and other supplies.",
+    "searchPlaceholder": "Search supplier by name or Tax ID...",
+    "addSupplier": "New Supplier",
+    "loading": "Loading suppliers...",
+    "noSuppliersTitle": "No suppliers registered",
+    "noSuppliersDesc": "You have not registered any suppliers yet. Add the first one!",
+    "form": {
+      "createTitle": "Register Supplier",
+      "editTitle": "Edit Supplier",
+      "companyName": "Company Name",
+      "cnpj": "Tax ID (CNPJ)",
+      "contactName": "Contact Name",
+      "contactEmail": "Email",
+      "contactPhone": "Phone",
+      "paymentData": "Bank Details / Payment",
+      "notes": "Notes (Optional)"
+    },
+    "table": {
+      "company": "Company",
+      "contact": "Contact",
+      "actions": "Actions"
+    },
+    "toast": {
+      "created": "Supplier registered successfully!",
+      "updated": "Supplier updated!",
+      "deleted": "Supplier removed.",
+      "error": "Error saving supplier."
+    }
   }
 }

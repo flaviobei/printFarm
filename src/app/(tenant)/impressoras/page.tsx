@@ -6,6 +6,8 @@ import { Printer as PrinterIcon, Plus, Trash2, Edit2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { Modal } from '@/components/ui/modal';
 import { useDictionary } from '@/lib/i18n';
+import { PageLayout } from '@/components/ui/PageLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function ImpressorasPage() {
   const { dict } = useDictionary();
@@ -84,19 +86,20 @@ export default function ImpressorasPage() {
   if (isLoading) return <div className="p-8 flex justify-center">{t.loading}</div>;
 
   return (
-    <div className="p-6 h-full flex flex-col max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t.title}</h1>
-          <p className="text-muted-foreground mt-1">{t.description}</p>
-        </div>
-        <button
-          onClick={openAddModal}
-          className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" /> {t.newPrinter}
-        </button>
-      </div>
+    <PageLayout>
+      <PageHeader 
+        title={t.title}
+        subtitle={t.description}
+        icon={<PrinterIcon className="w-8 h-8 mr-3 text-primary" />}
+        action={
+          <button
+            onClick={openAddModal}
+            className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" /> {t.newPrinter}
+          </button>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {printers.map((printer) => (
@@ -119,10 +122,10 @@ export default function ImpressorasPage() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => openEditModal(printer)} className="text-muted-foreground hover:text-primary transition-colors">
+                <button onClick={() => openEditModal(printer)} className="text-muted-foreground hover:text-primary transition-colors" title={dict.common.edit}>
                   <Edit2 className="w-4 h-4" />
                 </button>
-                <button onClick={() => handleDelete(printer.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                <button onClick={() => handleDelete(printer.id)} className="text-muted-foreground hover:text-destructive transition-colors" title={dict.common.delete}>
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -192,6 +195,6 @@ export default function ImpressorasPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageLayout>
   );
 }

@@ -1,11 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useDictionary } from '@/lib/i18n';
-import { api, Inventory } from '@/services/api';
-import { AlertTriangle, CheckCircle, Edit2, Plus, Trash2, Thermometer, Play, Pause, Layers, Copy, QrCode, Printer as PrinterIcon } from 'lucide-react';
+import { api, Inventory, Supplier } from '@/services/api';
+import { AlertTriangle, CheckCircle, Edit2, Plus, Trash2, Thermometer, Play, Pause, Layers, Copy, QrCode, Printer as PrinterIcon, Info, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
 import { toast } from 'sonner';
+import { PageLayout } from '@/components/ui/PageLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 // Estrutura de Agrupamento
 type InventoryGroup = {
@@ -28,6 +30,7 @@ export default function EstoquePage() {
   const estDict = dict.estoque;
   const [inventory, setInventory] = useState<Inventory[]>([]);
   const [groups, setGroups] = useState<InventoryGroup[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
@@ -43,13 +46,21 @@ export default function EstoquePage() {
   // Etiqueta Modal State
   const [labelItem, setLabelItem] = useState<Inventory | null>(null);
 
+  // Discard Modal State
+  const [discardItem, setDiscardItem] = useState<Inventory | null>(null);
+  const [warrantyInfo, setWarrantyInfo] = useState<{ supplier: Supplier, inventory: Inventory } | null>(null);
+
   useEffect(() => {
     loadData();
   }, []);
 
   async function loadData() {
     setIsLoading(true);
-    const fetchedInventory = await api.getInventory();
+    const [fetchedInventory, fetchedSuppliers] = await Promise.all([
+      api.getInventory(),
+      api.getSuppliers()
+    ]);
+    setSuppliers(fetchedSuppliers);
 
     // Process Grouping
     const grouped = fetchedInventory.reduce((acc, item) => {
@@ -168,10 +179,10 @@ export default function EstoquePage() {
     try {
       const newStatus = item.status === 'in_use' ? 'available' : 'in_use';
       await api.updateInventory(item.id, { status: newStatus });
-      toast.success(newStatus === 'in_use' ? 'Carretel em uso!' : 'Carretel devolvido ao estoque!');
+      toast.success(newStatus === 'in_use' ? dict?.toast?.rollInUse || 'Carretel em uso!' : dict?.toast?.rollReturned || 'Carretel devolvido ao estoque!');
       await loadData();
     } catch (error) {
-      toast.error('Erro ao atualizar status do carretel.');
+      toast.error(dict?.toast?.rollStatusError || 'Erro ao atualizar status do carretel.');
     }
   };
 
@@ -190,6 +201,10 @@ export default function EstoquePage() {
       temp_min: Number(formData.get('temp_min')),
       temp_max: Number(formData.get('temp_max')),
       status: formData.get('status') as string,
+      cost: Number(formData.get('cost')),
+      supplier_id: (formData.get('supplier_id') as string) || null,
+      invoice_number: formData.get('invoice_number') as string,
+      entry_date: formData.get('entry_date') as string,
     };
 
     try {
@@ -200,9 +215,9 @@ export default function EstoquePage() {
       }
       await loadData();
       setIsModalOpen(false);
-      toast.success('Carretel salvo com sucesso!');
+      toast.success(dict?.toast?.rollSaved || 'Carretel salvo com sucesso!');
     } catch (error) {
-      toast.error('Erro ao salvar rolo de filamento.');
+      toast.error(dict?.toast?.rollSaveError || 'Erro ao salvar rolo de filamento.');
     } finally {
       setIsSubmitting(false);
     }
@@ -217,78 +232,135 @@ export default function EstoquePage() {
     const quantity = Number(formData.get('quantity'));
 
     if (quantity <= 0 || quantity > 50) {
-      toast.error('Quantidade inválida (1-50).');
+      toast.error(dict?.toast?.invalidQuantity || 'Quantidade inválida (1-50).');
       setIsSubmitting(false);
       return;
     }
 
-    const template = batchGroup.items[0];
-    const dataList: Partial<Inventory>[] = Array(quantity).fill({
-      material_type: template.material_type,
-      brand: template.brand,
-      color: template.color,
-      color_hex: template.color_hex,
-      initial_weight_grams: template.initial_weight_grams,
-      remaining_grams: template.initial_weight_grams,
-      temp_min: template.temp_min,
-      temp_max: template.temp_max,
-      status: 'available'
-    });
+    const cost = Number(formData.get('cost'));
+    const supplier_id = (formData.get('supplier_id') as string) || null;
+    const invoice_number = formData.get('invoice_number') as string;
+    const entry_date = formData.get('entry_date') as string;
+
+    const newItems: Partial<Inventory>[] = Array.from({ length: quantity }).map(() => ({
+      material_type: batchGroup.material_type,
+      brand: batchGroup.brand,
+      color: batchGroup.color,
+      color_hex: batchGroup.color_hex,
+      initial_weight_grams: Number(batchGroup.items[0]?.initial_weight_grams || 1000),
+      remaining_grams: Number(batchGroup.items[0]?.initial_weight_grams || 1000),
+      temp_min: batchGroup.temp_min,
+      temp_max: batchGroup.temp_max,
+      status: 'available',
+      cost,
+      supplier_id,
+      invoice_number,
+      entry_date
+    }));
 
     try {
-      await api.createInventoryBatch(dataList);
+      await api.createInventoryBatch(newItems);
       await loadData();
       setIsBatchModalOpen(false);
-      toast.success(`${quantity} rolo(s) adicionado(s) com sucesso!`);
+      toast.success(`${quantity} ${dict?.toast?.batchAdded || 'rolo(s) adicionado(s) com sucesso!'}`);
     } catch (error) {
-      toast.error('Erro ao adicionar lote de rolos.');
+      toast.error(dict?.toast?.batchError || 'Erro ao adicionar lote de rolos.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteInventory = async (id: string) => {
-    if (!window.confirm(dict.common.deleteConfirm)) return;
+    if (!confirm(dict.common?.deleteConfirm || 'Tem certeza que deseja excluir permanentemente este rolo?')) return;
     try {
       await api.deleteInventory(id);
       await loadData();
-      toast.success('Carretel removido com sucesso!');
+      toast.success(dict?.toast?.rollDeleted || 'Operação realizada com sucesso!');
     } catch (error) {
-      toast.error('Erro ao deletar rolo de filamento.');
+      console.error(error);
+      toast.error(dict?.toast?.rollDeleteError || 'Erro ao deletar rolo.');
+    }
+  };
+
+  const handleDiscardSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!discardItem) return;
+    setIsSubmitting(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const reason = formData.get('reason') as string;
+    const quantity = Number(formData.get('quantity'));
+    const triggerWarranty = formData.get('triggerWarranty') === 'true';
+
+    try {
+      // Deduz a quantidade do estoque
+      const newRemaining = Math.max(0, discardItem.remaining_grams - quantity);
+      
+      await api.updateInventory(discardItem.id, {
+        remaining_grams: newRemaining,
+        status: newRemaining === 0 ? 'discarded' : discardItem.status,
+        discard_reason: reason,
+        warranty_triggered: triggerWarranty
+      });
+      
+      // Opcional: logar na tabela de log (descarte)
+      await api.logMaterialUsage({
+        inventory_id: discardItem.id,
+        weight_used: 0,
+        weight_wasted: quantity,
+        type: 'failure'
+      });
+
+      await loadData();
+      toast.success(dict?.toast?.discarded || 'Descarte registrado com sucesso!');
+      
+      if (triggerWarranty && discardItem.supplier_id) {
+        const sup = suppliers.find(s => s.id === discardItem.supplier_id);
+        if (sup) {
+          setWarrantyInfo({ supplier: sup, inventory: discardItem });
+        }
+      }
+      setDiscardItem(null);
+    } catch (error) {
+      console.error(error);
+      toast.error(dict?.toast?.completionError || 'Erro ao registrar descarte.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const getStatus = (item: Inventory) => {
-    if (item.status === 'in_use') return { label: 'Em Uso', color: 'text-blue-500', bg: 'bg-blue-500/10', icon: Play };
+    if (item.status === 'in_use') return { label: estDict?.inUse || 'Em Uso', color: 'text-blue-500', bg: 'bg-blue-500/10', icon: Play };
     if (item.remaining_grams <= 150) return { label: estDict.status.critical, color: 'text-destructive', bg: 'bg-destructive/10', icon: AlertTriangle };
     if (item.remaining_grams <= 300) return { label: estDict.status.low, color: 'text-amber-500', bg: 'bg-amber-500/10', icon: AlertTriangle };
     return { label: estDict.status.ok, color: 'text-green-500', bg: 'bg-green-500/10', icon: CheckCircle };
   };
 
   if (isLoading) {
-    return <div className="p-8 flex items-center justify-center h-full">Carregando estoque...</div>;
+    return <div className="p-8 flex items-center justify-center h-full">{estDict?.loading || 'Carregando estoque...'}</div>;
   }
 
   return (
-    <div className="p-6 h-full flex flex-col max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{estDict.title}</h1>
-          <p className="text-muted-foreground mt-1">Gestão de Perfil de Materiais e Instâncias (Rolos)</p>
-        </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Perfil/Rolo
-        </button>
-      </div>
+    <PageLayout>
+      <PageHeader 
+        title={estDict.title}
+        subtitle={estDict?.subtitle || 'Gestão de Perfil de Materiais e Instâncias (Rolos)'}
+        icon={<Package className="w-8 h-8 mr-3 text-primary" />}
+        action={
+          <button
+            onClick={openCreateModal}
+            className="flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {estDict?.newProfile || 'Novo Perfil/Rolo'}
+          </button>
+        }
+      />
 
       <div className="space-y-4">
         {groups.length === 0 && (
           <div className="p-12 text-center text-muted-foreground border-2 border-dashed rounded-xl bg-card">
-            Nenhum perfil de material cadastrado no momento.
+            {estDict?.noProfiles || 'Nenhum perfil de material cadastrado no momento.'}
           </div>
         )}
 
@@ -317,7 +389,7 @@ export default function EstoquePage() {
                       {group.temp_min}°C - {group.temp_max}°C
                     </span>
                     <span className="flex items-center font-medium text-foreground">
-                      Total: {(group.totalGrams / 1000).toFixed(2)} kg
+                      {estDict?.total || 'Total:'} {(group.totalGrams / 1000).toFixed(2)} kg
                     </span>
                   </div>
                 </div>
@@ -327,15 +399,15 @@ export default function EstoquePage() {
                 {/* Badges de Quantidade */}
                 <div className="flex space-x-2">
                   <div className="text-center px-3 py-1 bg-background border rounded-md">
-                    <div className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Lacrados</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wider font-bold">{estDict?.sealed || 'Lacrados'}</div>
                     <div className="font-bold text-green-600">{group.sealedCount}</div>
                   </div>
                   <div className="text-center px-3 py-1 bg-background border rounded-md">
-                    <div className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Abertos</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wider font-bold">{estDict?.open || 'Abertos'}</div>
                     <div className="font-bold text-amber-500">{group.openCount}</div>
                   </div>
                   <div className="text-center px-3 py-1 bg-background border rounded-md">
-                    <div className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Em Uso</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wider font-bold">{estDict?.inUse || 'Em Uso'}</div>
                     <div className="font-bold text-blue-500">{group.inUseCount}</div>
                   </div>
                 </div>
@@ -347,13 +419,13 @@ export default function EstoquePage() {
                     className="flex items-center bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-1.5 rounded-md text-sm font-medium transition-colors border"
                   >
                     <Layers className="w-4 h-4 mr-1.5" />
-                    + Lote
+                    {estDict?.addBatch || '+ Lote'}
                   </button>
                   <button
                     onClick={() => toggleGroup(group.key)}
                     className="p-1.5 hover:bg-background rounded-md text-muted-foreground border border-transparent hover:border-border transition-colors"
                   >
-                    {expandedGroups[group.key] ? 'Ocultar Rolos ▲' : 'Ver Rolos ▼'}
+                    {expandedGroups[group.key] ? estDict?.hideRolls || 'Ocultar Rolos ▲' : estDict?.showRolls || 'Ver Rolos ▼'}
                   </button>
                 </div>
               </div>
@@ -365,10 +437,10 @@ export default function EstoquePage() {
                 <table className="w-full text-sm text-left">
                   <thead className="bg-muted/10 border-b">
                     <tr>
-                      <th className="px-6 py-2 font-medium text-xs text-muted-foreground">ID do Rolo</th>
-                      <th className="px-6 py-2 font-medium text-xs text-muted-foreground">Restante (Gasto)</th>
-                      <th className="px-6 py-2 font-medium text-xs text-muted-foreground">Status Logístico</th>
-                      <th className="px-6 py-2 font-medium text-xs text-muted-foreground text-right">Ações</th>
+                      <th className="px-6 py-2 font-medium text-xs text-muted-foreground">{estDict?.table?.rollId || 'ID do Rolo'}</th>
+                      <th className="px-6 py-2 font-medium text-xs text-muted-foreground">{estDict?.table?.remainingGas || 'Restante (Gasto)'}</th>
+                      <th className="px-6 py-2 font-medium text-xs text-muted-foreground">{estDict?.table?.logistics || 'Status Logístico'}</th>
+                      <th className="px-6 py-2 font-medium text-xs text-muted-foreground text-right">{estDict?.table?.actions || 'Ações'}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -394,7 +466,7 @@ export default function EstoquePage() {
                                   ></div>
                                 </div>
                               </div>
-                              {isSealed && <span className="text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded">LACRADO</span>}
+                              {isSealed && <span className="text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded">{estDict?.table?.sealedBadge || 'LACRADO'}</span>}
                             </div>
                           </td>
                           <td className="px-6 py-3">
@@ -408,28 +480,28 @@ export default function EstoquePage() {
                               <button
                                 onClick={() => openLabelModal(item)}
                                 className="p-1.5 text-muted-foreground hover:bg-muted rounded-md transition-colors"
-                                title="Gerar Etiqueta QR"
+                                title={estDict?.actions?.qr || 'Gerar Etiqueta QR'}
                               >
                                 <QrCode className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => toggleStatus(item)}
                                 className="p-1.5 text-muted-foreground hover:bg-muted rounded-md transition-colors"
-                                title={item.status === 'in_use' ? 'Devolver ao Estoque' : 'Colocar em Uso (Manual)'}
+                                title={item.status === 'in_use' ? estDict?.actions?.returnToStock || 'Devolver ao Estoque' : estDict?.actions?.putInUse || 'Colocar em Uso (Manual)'}
                               >
                                 {item.status === 'in_use' ? <Pause className="w-4 h-4 text-amber-500" /> : <Play className="w-4 h-4 text-blue-500" />}
                               </button>
                               <button
                                 onClick={() => openEditModal(item)}
                                 className="p-1.5 text-muted-foreground hover:bg-muted rounded-md transition-colors"
-                                title="Editar Peso Manualmente"
+                                title={estDict?.actions?.editWeight || 'Editar Peso Manualmente'}
                               >
                                 <Edit2 className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => handleDeleteInventory(item.id)}
+                                onClick={() => setDiscardItem(item)}
                                 className="p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-md transition-colors"
-                                title="Descartar Rolo"
+                                title={estDict?.actions?.discard || 'Descartar Rolo'}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -447,58 +519,82 @@ export default function EstoquePage() {
       </div>
 
       {/* Modal Genérico */}
-      <Modal isOpen={isModalOpen} onClose={() => !isSubmitting && setIsModalOpen(false)} title={editingItem ? 'Editar Perfil / Rolo' : 'Criar Novo Perfil / Rolo'}>
+      <Modal isOpen={isModalOpen} onClose={() => !isSubmitting && setIsModalOpen(false)} title={editingItem ? estDict?.form?.editProfile || 'Editar Perfil / Rolo' : estDict?.form?.createProfile || 'Criar Novo Perfil / Rolo'}>
         <form onSubmit={handleSaveInventory} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-bold block mb-1">Material</label>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.material || 'Material'}</label>
               <input required name="material_type" defaultValue={editingItem?.material_type} placeholder="PLA, PETG..." className="w-full p-2 border rounded-md" />
             </div>
             <div>
-              <label className="text-sm font-bold block mb-1">Marca</label>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.brand || 'Marca'}</label>
               <input required name="brand" defaultValue={editingItem?.brand} placeholder="eSun, Hatchbox..." className="w-full p-2 border rounded-md" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-bold block mb-1">Nome da Cor</label>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.colorName || 'Nome da Cor'}</label>
               <input required name="color" defaultValue={editingItem?.color} placeholder="Vermelho Fogo" className="w-full p-2 border rounded-md" />
             </div>
             <div>
-              <label className="text-sm font-bold block mb-1">Cor Visual (HEX)</label>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.colorHex || 'Cor Visual (HEX)'}</label>
               <input type="color" required name="color_hex" defaultValue={editingItem?.color_hex || '#cccccc'} className="w-full h-10 p-1 border rounded-md cursor-pointer" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-bold block mb-1">Peso Inicial (g)</label>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.initialWeight || 'Peso Inicial (g)'}</label>
               <input required type="number" name="initial_weight_grams" defaultValue={editingItem?.initial_weight_grams || 1000} className="w-full p-2 border rounded-md" />
             </div>
             <div>
-              <label className="text-sm font-bold block mb-1">Restante (g)</label>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.remainingWeight || 'Restante (g)'}</label>
               <input required type="number" name="remaining_grams" defaultValue={editingItem?.remaining_grams || 1000} className="w-full p-2 border rounded-md" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-bold block mb-1">Temp. Mínima (°C)</label>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.tempMin || 'Temp. Mínima (°C)'}</label>
               <input required type="number" name="temp_min" defaultValue={editingItem?.temp_min || 190} className="w-full p-2 border rounded-md" />
             </div>
             <div>
-              <label className="text-sm font-bold block mb-1">Temp. Máxima (°C)</label>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.tempMax || 'Temp. Máxima (°C)'}</label>
               <input required type="number" name="temp_max" defaultValue={editingItem?.temp_max || 220} className="w-full p-2 border rounded-md" />
             </div>
           </div>
 
-          <div>
-            <label className="text-sm font-bold block mb-1">Status de Uso</label>
-            <select name="status" defaultValue={editingItem?.status || 'available'} className="w-full p-2 border rounded-md">
-              <option value="available">Disponível no Estoque</option>
-              <option value="in_use">Em Uso (Checkout)</option>
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-bold block mb-1">Status de Uso</label>
+              <select name="status" defaultValue={editingItem?.status || 'available'} className="w-full p-2 border rounded-md">
+                <option value="available">Disponível no Estoque</option>
+                <option value="in_use">Em Uso (Checkout)</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.supplier || 'Fornecedor (Opcional)'}</label>
+              <select name="supplier_id" defaultValue={editingItem?.supplier_id || ''} className="w-full p-2 border rounded-md">
+                <option value="">{estDict?.form?.noSupplier || 'Nenhum fornecedor cadastrado'}</option>
+                {suppliers.map(s => <option key={s.id} value={s.id}>{s.company_name}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.invoiceNumber || 'Nota Fiscal'}</label>
+              <input type="text" name="invoice_number" defaultValue={editingItem?.invoice_number} placeholder="NF-e..." className="w-full p-2 border rounded-md" />
+            </div>
+            <div>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.entryDate || 'Data de Entrada'}</label>
+              <input type="date" name="entry_date" defaultValue={editingItem?.entry_date ? new Date(editingItem.entry_date).toISOString().split('T')[0] : ''} className="w-full p-2 border rounded-md" />
+            </div>
+            <div>
+              <label className="text-sm font-bold block mb-1">{estDict?.form?.cost || 'Custo Unitário (R$)'}</label>
+              <input type="number" step="0.01" name="cost" defaultValue={editingItem?.cost} placeholder="Ex: 89.90" className="w-full p-2 border rounded-md" />
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-4 mt-6 border-t">
@@ -513,7 +609,7 @@ export default function EstoquePage() {
       </Modal>
 
       {/* Modal de Entrada em Lote */}
-      <Modal isOpen={isBatchModalOpen} onClose={() => !isSubmitting && setIsBatchModalOpen(false)} title="Dar Entrada de Lote (Rolos Lacrados)">
+      <Modal isOpen={isBatchModalOpen} onClose={() => !isSubmitting && setIsBatchModalOpen(false)} title={estDict?.batch?.title || 'Dar Entrada de Lote (Rolos Lacrados)'}>
         {batchGroup && (
           <form onSubmit={handleSaveBatch} className="space-y-4">
             <div className="bg-muted/50 p-4 rounded-md mb-4 border">
@@ -522,27 +618,50 @@ export default function EstoquePage() {
               <p className="text-xs font-medium mt-1">Peso Lacrado Padrão: {batchGroup.items[0]?.initial_weight_grams}g</p>
             </div>
 
-            <div>
-              <label className="text-sm font-bold block mb-2">Quantos rolos idênticos acabaram de chegar?</label>
-              <input
-                required
-                type="number"
-                name="quantity"
-                min="1"
-                max="50"
-                defaultValue="5"
-                className="w-full p-3 border rounded-md text-lg font-medium text-center"
-              />
-              <p className="text-xs text-muted-foreground mt-2 text-center">Serão criadas instâncias independentes para rastreio exato.</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-bold block mb-2">Quantos rolos idênticos chegaram?</label>
+                <input
+                  required
+                  type="number"
+                  name="quantity"
+                  min="1"
+                  max="50"
+                  defaultValue="5"
+                  className="w-full p-3 border rounded-md text-lg font-medium text-center bg-background focus:ring-2 focus:ring-primary focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-bold block mb-2">{estDict?.batch?.supplier || 'Fornecedor'}</label>
+                <select name="supplier_id" className="w-full p-3 border rounded-md bg-background focus:ring-2 focus:ring-primary focus:outline-none">
+                  <option value="">{estDict?.form?.noSupplier || 'Selecione...'}</option>
+                  {suppliers.map(s => <option key={s.id} value={s.id}>{s.company_name}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-bold block mb-1">{estDict?.batch?.invoiceNumber || 'Nota Fiscal (NF)'}</label>
+                <input type="text" name="invoice_number" placeholder="Opcional..." className="w-full p-2 border rounded-md bg-background focus:ring-2 focus:ring-primary focus:outline-none" />
+              </div>
+              <div>
+                <label className="text-sm font-bold block mb-1">{estDict?.batch?.entryDate || 'Data da Compra'}</label>
+                <input type="date" name="entry_date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full p-2 border rounded-md bg-background focus:ring-2 focus:ring-primary focus:outline-none" />
+              </div>
+              <div>
+                <label className="text-sm font-bold block mb-1">{estDict?.batch?.cost || 'Custo por Rolo (R$)'}</label>
+                <input type="number" step="0.01" name="cost" placeholder="Ex: 89.90" className="w-full p-2 border rounded-md bg-background focus:ring-2 focus:ring-primary focus:outline-none" />
+              </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-4 mt-6 border-t">
               <button type="button" onClick={() => setIsBatchModalOpen(false)} className="px-4 py-2 text-sm font-medium border rounded-md hover:bg-muted">
-                Cancelar
+                {estDict?.batch?.cancel || 'Cancelar'}
               </button>
               <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-md disabled:opacity-50 hover:bg-green-700 flex items-center">
                 <Copy className="w-4 h-4 mr-2" />
-                {isSubmitting ? 'Gerando Instâncias...' : 'Gerar Instâncias no Estoque'}
+                {isSubmitting ? estDict?.batch?.generating || 'Gerando Instâncias...' : estDict?.batch?.generate || 'Gerar Instâncias no Estoque'}
               </button>
             </div>
           </form>
@@ -550,7 +669,7 @@ export default function EstoquePage() {
       </Modal>
 
       {/* Modal de Etiqueta QR Code */}
-      <Modal isOpen={!!labelItem} onClose={() => setLabelItem(null)} title="Rastreio do Rolo (QR Code)">
+      <Modal isOpen={!!labelItem} onClose={() => setLabelItem(null)} title={estDict?.qr?.title || 'Rastreio do Rolo (QR Code)'}>
         {labelItem && (
           <div className="flex flex-col items-center justify-center py-6">
             <div className="border-4 border-slate-900 rounded-xl p-6 bg-white w-72 shadow-lg mb-6 text-slate-900">
@@ -581,16 +700,109 @@ export default function EstoquePage() {
 
             <div className="flex justify-center w-full gap-3">
               <button onClick={() => setLabelItem(null)} className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted transition-colors">
-                Fechar
+                {estDict?.qr?.close || 'Fechar'}
               </button>
               <button onClick={printLabel} className="px-4 py-2 bg-slate-900 text-white rounded-md text-sm font-medium hover:bg-slate-800 flex items-center transition-colors">
                 <PrinterIcon className="w-4 h-4 mr-2" />
-                Imprimir Etiqueta
+                {estDict?.qr?.print || 'Imprimir Etiqueta'}
               </button>
             </div>
           </div>
         )}
       </Modal>
-    </div>
+      {/* Modal de Descarte */}
+      <Modal isOpen={!!discardItem} onClose={() => !isSubmitting && setDiscardItem(null)} title={estDict?.discard?.title || 'Descartar Rolo / Defeito'}>
+        {discardItem && (
+          <form onSubmit={handleDiscardSubmit} className="space-y-4">
+            <p className="text-sm text-muted-foreground">{estDict?.discard?.desc || 'Informe os detalhes do problema para o registro.'}</p>
+            
+            <div className="bg-muted/30 p-3 rounded-md border flex items-center mb-4">
+              <div className="w-4 h-4 rounded-full mr-2" style={{ backgroundColor: discardItem.color_hex }}></div>
+              <span className="font-bold mr-2">{discardItem.brand} {discardItem.material_type}</span>
+              <span className="text-sm text-muted-foreground">- {discardItem.color}</span>
+            </div>
+
+            <div>
+              <label className="text-sm font-bold block mb-1">{estDict?.discard?.reason || 'Motivo do Descarte'}</label>
+              <select name="reason" required className="w-full p-2 border rounded-md bg-background focus:ring-2 focus:ring-primary focus:outline-none">
+                <option value="">Selecione...</option>
+                <option value="moisture">{estDict?.discard?.reasons?.moisture || 'Umidade Excessiva'}</option>
+                <option value="brittle">{estDict?.discard?.reasons?.brittle || 'Quebradiço / Ressecado'}</option>
+                <option value="inconsistent">{estDict?.discard?.reasons?.inconsistent || 'Inconsistência de Diâmetro'}</option>
+                <option value="tangled">{estDict?.discard?.reasons?.tangled || 'Nó no Rolo (Emaranhado)'}</option>
+                <option value="other">{estDict?.discard?.reasons?.other || 'Outro'}</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-sm font-bold block mb-1">{estDict?.discard?.quantity || 'Quantidade Descartada (g)'}</label>
+              <input type="number" name="quantity" required max={discardItem.remaining_grams} min="1" defaultValue={discardItem.remaining_grams} className="w-full p-2 border rounded-md bg-background focus:ring-2 focus:ring-primary focus:outline-none" />
+              <p className="text-xs text-muted-foreground mt-1">O rolo tem {discardItem.remaining_grams}g restantes. Você pode descartar parcialmente.</p>
+            </div>
+
+            <div className="flex items-center space-x-2 pt-2">
+              <input type="checkbox" id="triggerWarranty" name="triggerWarranty" value="true" className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
+              <label htmlFor="triggerWarranty" className="text-sm font-bold text-slate-700 cursor-pointer">
+                {estDict?.discard?.triggerWarranty || 'Acionar Garantia (Exibir dados do Fornecedor)'}
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 mt-6 border-t">
+              <button type="button" onClick={() => setDiscardItem(null)} className="px-4 py-2 text-sm font-medium border rounded-md hover:bg-muted transition-colors">
+                {dict.common?.cancel || 'Cancelar'}
+              </button>
+              <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-md disabled:opacity-50 hover:bg-red-700 transition-colors">
+                {isSubmitting ? dict.common?.loading || 'Processando...' : estDict?.discard?.confirm || 'Confirmar Descarte'}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Alerta de Garantia (Supplier Info) */}
+      <Modal isOpen={!!warrantyInfo} onClose={() => setWarrantyInfo(null)} title={estDict?.discard?.warrantyTitle || 'Dados para Acionar Garantia'}>
+        {warrantyInfo && (
+          <div className="space-y-4">
+            <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
+              <div className="flex">
+                <AlertTriangle className="h-6 w-6 text-amber-500 mr-3" />
+                <div>
+                  <h3 className="text-amber-800 font-bold">{warrantyInfo.supplier.company_name}</h3>
+                  <p className="text-sm text-amber-700 mt-1">{estDict?.discard?.warrantyDesc || 'Use os dados abaixo para contatar o fornecedor sobre o lote defeituoso.'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white border rounded-md p-4 space-y-3">
+              <div>
+                <span className="text-xs font-bold text-muted-foreground uppercase">{estDict?.discard?.warrantyEmail || 'Email'}</span>
+                <p className="font-medium">{warrantyInfo.supplier.contact_email || 'Não informado'}</p>
+              </div>
+              <div>
+                <span className="text-xs font-bold text-muted-foreground uppercase">{estDict?.discard?.warrantyPhone || 'Telefone'}</span>
+                <p className="font-medium">{warrantyInfo.supplier.contact_phone || 'Não informado'}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t mt-2">
+                <div>
+                  <span className="text-xs font-bold text-muted-foreground uppercase">{estDict?.discard?.warrantyInvoice || 'Nota Fiscal'}</span>
+                  <p className="font-mono">{warrantyInfo.inventory.invoice_number || 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-muted-foreground uppercase">{estDict?.discard?.warrantyEntry || 'Data da Compra'}</span>
+                  <p className="font-mono">{warrantyInfo.inventory.entry_date ? new Date(warrantyInfo.inventory.entry_date).toLocaleDateString() : 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <button onClick={() => setWarrantyInfo(null)} className="px-6 py-2 bg-slate-900 text-white rounded-md text-sm font-medium hover:bg-slate-800 transition-colors">
+                {estDict?.discard?.warrantyClose || 'Entendido, fechar'}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+    </PageLayout>
   );
 }

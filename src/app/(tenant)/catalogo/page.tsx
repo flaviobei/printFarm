@@ -8,6 +8,9 @@ import { Edit2, Plus, Trash2, ImageIcon, Palette, X, Upload, Download, FileUp } 
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
 import { toast } from 'sonner';
+import { PageLayout } from '@/components/ui/PageLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Box } from 'lucide-react';
 
 export default function CatalogoPage() {
   const { dict } = useDictionary();
@@ -206,36 +209,37 @@ export default function CatalogoPage() {
   }
 
   return (
-    <div className="p-6 h-full flex flex-col max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{catDict.title}</h1>
-          <p className="text-muted-foreground mt-1">{catDict.description}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={handleExportCSV}
-            disabled={skus.length === 0}
-            className="flex items-center border px-3 py-2 rounded-md text-sm font-medium hover:bg-muted transition-colors disabled:opacity-40"
-            title="Exportar catálogo para CSV"
-          >
-            <Download className="w-4 h-4 mr-1.5" />
-            {catDict.export}
-          </button>
-          <label className="flex items-center border px-3 py-2 rounded-md text-sm font-medium hover:bg-muted transition-colors cursor-pointer">
-            <FileUp className="w-4 h-4 mr-1.5" />
-            {catDict.import}
-            <input type="file" accept=".csv" className="hidden" onChange={handleImportCSV} />
-          </label>
-          <button 
-            onClick={openCreateModal}
-            className="flex items-center bg-primary text-primary-foreground px-3 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            {dict.forms.addSku}
-          </button>
-        </div>
-      </div>
+    <PageLayout>
+      <PageHeader 
+        title={catDict.title}
+        subtitle={catDict.description}
+        icon={<Box className="w-8 h-8 mr-3 text-primary" />}
+        action={
+          <>
+            <button 
+              onClick={handleExportCSV}
+              disabled={skus.length === 0}
+              className="flex items-center border px-3 py-2 rounded-md text-sm font-medium hover:bg-muted transition-colors disabled:opacity-40"
+              title={catDict.export}
+            >
+              <Download className="w-4 h-4 mr-1.5" />
+              {catDict.export}
+            </button>
+            <label className="flex items-center border px-3 py-2 rounded-md text-sm font-medium hover:bg-muted transition-colors cursor-pointer">
+              <FileUp className="w-4 h-4 mr-1.5" />
+              {catDict.import}
+              <input type="file" accept=".csv" className="hidden" onChange={handleImportCSV} />
+            </label>
+            <button 
+              onClick={openCreateModal}
+              className="flex items-center bg-primary text-primary-foreground px-3 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              {dict.forms.addSku}
+            </button>
+          </>
+        }
+      />
 
       <div className="rounded-md border bg-card text-card-foreground shadow-sm">
         <div className="overflow-x-auto">
@@ -255,7 +259,7 @@ export default function CatalogoPage() {
               {skus.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
-                    Nenhum produto cadastrado no momento.
+                    {catDict.noProducts}
                   </td>
                 </tr>
               )}
@@ -303,7 +307,7 @@ export default function CatalogoPage() {
                         {sku.multicolor_weights?.length ? (
                           <span className="text-[10px] bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-sm border border-violet-200 flex items-center gap-0.5">
                             <Palette className="w-2.5 h-2.5" />
-                            {sku.multicolor_weights.length} cores
+                            {sku.multicolor_weights.length} {dict.common.colors}
                           </span>
                         ) : null}
                       </div>
@@ -335,14 +339,14 @@ export default function CatalogoPage() {
                       <button 
                         onClick={() => openEditModal(sku)}
                         className="text-muted-foreground hover:text-primary transition-colors p-2" 
-                        title="Editar"
+                        title={dict.common.edit}
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => handleDeleteSKU(sku.id)}
                         className="text-muted-foreground hover:text-destructive transition-colors p-2" 
-                        title="Remover"
+                        title={dict.common.delete}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -365,7 +369,7 @@ export default function CatalogoPage() {
           <div className="space-y-2">
             <label className="text-sm font-bold flex items-center gap-1.5">
               <ImageIcon className="w-4 h-4 text-primary" />
-              Foto do Produto
+              {catDict.productPhoto}
             </label>
             <div className="flex items-center gap-4">
               {previewUrl ? (
@@ -386,7 +390,7 @@ export default function CatalogoPage() {
               )}
               <label className="cursor-pointer flex items-center gap-2 px-3 py-2 border rounded-md text-sm font-medium hover:bg-muted transition-colors">
                 <Upload className="w-4 h-4" />
-                {previewUrl ? 'Trocar Imagem' : 'Enviar Imagem'}
+                {previewUrl ? catDict.changeImage : catDict.uploadImage}
                 <input
                   type="file"
                   accept="image/*"
@@ -432,15 +436,15 @@ export default function CatalogoPage() {
                 className="rounded border-gray-300"
               />
               <Palette className="w-4 h-4 text-violet-600" />
-              <span className="text-sm font-bold">Peça Multi-Colorida</span>
+              <span className="text-sm font-bold">{catDict.multicolor}</span>
             </label>
 
             {isMulticolor ? (
               <div className="space-y-2 pt-2 border-t">
-                <p className="text-xs text-muted-foreground">Informe o peso estimado de cada cor. O peso total será calculado automaticamente.</p>
+                <p className="text-xs text-muted-foreground">{catDict.multicolorTip}</p>
                 {colorWeights.map((w, idx) => (
                   <div key={idx} className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-muted-foreground w-14">Cor {idx + 1}</span>
+                    <span className="text-xs font-semibold text-muted-foreground w-14">{catDict.colorLabel} {idx + 1}</span>
                     <input
                       type="number"
                       min={0}
@@ -471,10 +475,10 @@ export default function CatalogoPage() {
                     onClick={() => setColorWeights([...colorWeights, 0])}
                     className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
                   >
-                    <Plus className="w-3 h-3" /> Adicionar Cor
+                    <Plus className="w-3 h-3" /> {catDict.addColor}
                   </button>
                   <span className="text-xs font-bold text-foreground">
-                    Total: {colorWeights.reduce((a, b) => a + b, 0)}g
+                    {catDict.totalLabel}: {colorWeights.reduce((a, b) => a + b, 0)}g
                   </span>
                 </div>
               </div>
@@ -500,7 +504,7 @@ export default function CatalogoPage() {
               disabled={isSubmitting}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {isSubmitting ? 'Salvando...' : dict.common.save}
+              {isSubmitting ? catDict.saving : dict.common.save}
             </button>
           </div>
         </form>
@@ -520,12 +524,12 @@ export default function CatalogoPage() {
           </button>
           <img 
             src={lightboxUrl} 
-            alt="Produto" 
+            alt={dict.common.product} 
             className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 }

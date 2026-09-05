@@ -6,6 +6,9 @@ import { api, SaaSPlan } from '@/services/api';
 import { Check, Info, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { PageLayout } from '@/components/ui/PageLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { CreditCard } from 'lucide-react';
 
 export default function AssinaturaPage() {
   const { dict, locale } = useDictionary();
@@ -32,14 +35,14 @@ export default function AssinaturaPage() {
     const promise = new Promise((resolve) => setTimeout(resolve, 2500));
     
     toast.promise(promise, {
-      loading: 'Redirecionando para checkout seguro (Stripe)...',
+      loading: dict?.toast?.checkoutLoading || 'Redirecionando para checkout seguro (Stripe)...',
       success: () => {
         setIsProcessing(null);
-        return 'Mock: Redirecionamento completo! (Em produção, o usuário sairia da tela)';
+        return dict?.toast?.checkoutSuccess || 'Mock: Redirecionamento completo! (Em produção, o usuário sairia da tela)';
       },
       error: () => {
         setIsProcessing(null);
-        return 'Erro ao redirecionar.';
+        return dict?.toast?.checkoutError || 'Erro ao redirecionar.';
       },
     });
   };
@@ -49,22 +52,25 @@ export default function AssinaturaPage() {
   };
 
   if (isLoading) {
-    return <div className="p-8 flex items-center justify-center h-full">Carregando planos...</div>;
+    return <div className="p-8 flex items-center justify-center h-full">{billDict?.loading || 'Carregando planos...'}</div>;
   }
 
   // Identifica o plano atual apenas por Mock (vamos fingir que o free é o atual)
   const currentPlanId = 'plan_free';
 
   return (
-    <div className="p-6 h-full flex flex-col max-w-7xl mx-auto overflow-y-auto">
-      <div className="text-center mb-12 mt-4">
-        <h1 className="text-4xl font-extrabold tracking-tight mb-3">{billDict.title}</h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{billDict.description}</p>
-        <div className="mt-4 inline-flex items-center space-x-2 bg-muted px-4 py-2 rounded-full text-sm font-medium">
-          <span className="text-muted-foreground">{billDict.currentPlan}</span>
-          <span className="text-primary font-bold">{(billDict.plans as any)[plans.find(p => p.id === currentPlanId)?.key || 'free']}</span>
-        </div>
-      </div>
+    <PageLayout className="overflow-y-auto">
+      <PageHeader 
+        title={billDict.title}
+        subtitle={billDict.description}
+        icon={<CreditCard className="w-8 h-8 mr-3 text-primary" />}
+        action={
+          <div className="inline-flex items-center space-x-2 bg-muted px-4 py-2 rounded-full text-sm font-medium">
+            <span className="text-muted-foreground">{billDict.currentPlan}</span>
+            <span className="text-primary font-bold">{(billDict.plans as any)[plans.find(p => p.id === currentPlanId)?.key || 'free']}</span>
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
         {plans.map((plan) => {
@@ -83,7 +89,7 @@ export default function AssinaturaPage() {
             >
               {plan.key === 'pro' && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                  Mais Popular
+                  {billDict?.mostPopular || 'Mais Popular'}
                 </div>
               )}
 
@@ -131,8 +137,8 @@ export default function AssinaturaPage() {
                       "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     )}
                   >
-                    {isProcessing === plan.id ? 'Processando...' : 
-                     isCurrent ? 'Plano Atual' : 
+                    {isProcessing === plan.id ? (billDict?.processing || 'Processando...') : 
+                     isCurrent ? (billDict?.currentPlanBtn || 'Plano Atual') : 
                      plan.has_trial ? billDict.startTrial : billDict.upgrade}
                   </button>
                 )}
@@ -141,6 +147,6 @@ export default function AssinaturaPage() {
           );
         })}
       </div>
-    </div>
+    </PageLayout>
   );
 }

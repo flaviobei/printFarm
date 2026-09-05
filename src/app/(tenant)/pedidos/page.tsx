@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useDictionary } from '@/lib/i18n';
 import { api, Order, SKU, Printer, Inventory } from '@/services/api';
-import { Clock, Printer as PrinterIcon, Package, CheckCircle, Truck, Plus, Trash2, Edit2, Play, Check, AlertTriangle, ImageIcon } from 'lucide-react';
+import { Clock, Printer as PrinterIcon, Package, CheckCircle, Truck, Plus, Trash2, Edit2, Play, Check, AlertTriangle, ImageIcon, ListTodo } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
 import { toast } from 'sonner';
+import { PageLayout } from '@/components/ui/PageLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 import {
   DndContext,
   DragOverlay,
@@ -49,6 +51,9 @@ function DroppableColumn({
   onDelete: (id: string, e: React.MouseEvent) => void,
   onDeliver: (id: string, e: React.MouseEvent) => void
 }) {
+  const { dict: fullDict } = useDictionary();
+  const dict = fullDict.pedidos;
+  
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
   });
@@ -85,7 +90,7 @@ function DroppableColumn({
         ))}
         {orders.length === 0 && (
           <div className="text-center text-sm text-muted-foreground py-8 border-2 border-dashed rounded-md opacity-50">
-            Vazio
+            {dict?.emptyColumn || 'Vazio'}
           </div>
         )}
       </div>
@@ -110,6 +115,9 @@ function DraggableCard({
   onDeliver?: (id: string, e: React.MouseEvent) => void,
   isOverlay?: boolean
 }) {
+  const { dict: fullDict } = useDictionary();
+  const dict = fullDict.pedidos;
+
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: order.id,
     data: { order }
@@ -140,7 +148,7 @@ function DraggableCard({
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => onEdit(order, e)}
             className="text-muted-foreground hover:text-primary transition-colors p-1 cursor-pointer"
-            title="Editar"
+            title={fullDict?.common?.edit || 'Editar'}
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
@@ -148,7 +156,7 @@ function DraggableCard({
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => onDelete(order.id, e)}
             className="text-muted-foreground hover:text-destructive transition-colors p-1 cursor-pointer"
-            title="Remover"
+            title={fullDict?.common?.delete || 'Remover'}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -158,7 +166,7 @@ function DraggableCard({
       <div className="flex justify-between items-start mb-2 pr-12">
         <span className="text-xs font-bold text-muted-foreground">{order.id.split('-')[0]}</span>
         <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-          {sku?.filament_type || 'Desconhecido'}
+          {sku?.filament_type || dict?.unknown || 'Desconhecido'}
         </span>
       </div>
       <div className="flex items-start gap-2.5 mb-1">
@@ -170,8 +178,8 @@ function DraggableCard({
           </div>
         )}
         <div>
-          <h3 className="font-medium text-sm leading-tight">{sku?.name || 'Produto Removido'}</h3>
-          <p className="text-xs text-muted-foreground">Cliente: {order.customer_name}</p>
+          <h3 className="font-medium text-sm leading-tight">{sku?.name || dict?.removedProduct || 'Produto Removido'}</h3>
+          <p className="text-xs text-muted-foreground">{dict?.cards?.customer || 'Cliente'}: {order.customer_name}</p>
         </div>
       </div>
 
@@ -196,7 +204,7 @@ function DraggableCard({
             className="w-full mt-2 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 text-xs font-bold rounded border border-green-200 flex items-center justify-center transition-colors cursor-pointer"
           >
             <CheckCircle className="w-3.5 h-3.5 mr-1" />
-            Confirmar Entrega
+            {dict?.delivery?.confirmDelivery || 'Confirmar Entrega'}
           </button>
         )}
       </div>
@@ -282,15 +290,15 @@ export default function PedidosPage() {
     try {
       if (editingOrder) {
         await api.updateOrder(editingOrder.id, orderData);
-        toast.success('Pedido atualizado!');
+        toast.success(fullDict?.toast?.orderMoved || 'Pedido atualizado!');
       } else {
         await api.createOrder(orderData);
-        toast.success('Pedido criado!');
+        toast.success(fullDict?.toast?.orderMoved || 'Pedido criado!');
       }
       await loadData();
       setIsModalOpen(false);
     } catch (error) {
-      toast.error('Erro ao salvar pedido.');
+      toast.error(fullDict?.toast?.orderMoveError || 'Erro ao salvar pedido.');
     } finally {
       setIsSubmitting(false);
     }
@@ -301,10 +309,10 @@ export default function PedidosPage() {
     if (!window.confirm(fullDict.common.deleteConfirm)) return;
     try {
       await api.deleteOrder(id);
-      toast.success('Pedido removido!');
+      toast.success(fullDict?.toast?.orderRemoved || 'Pedido removido!');
       await loadData();
     } catch (error) {
-      toast.error('Erro ao deletar pedido.');
+      toast.error(fullDict?.toast?.orderRemoveError || 'Erro ao deletar pedido.');
     }
   };
 
@@ -338,11 +346,11 @@ export default function PedidosPage() {
         await api.updateInventory(invId, { status: 'in_use' });
       }
 
-      toast.success('Produção Iniciada!');
+      toast.success(fullDict?.toast?.productionStarted || 'Produção Iniciada!');
       await loadData();
       setIsSetupModalOpen(false);
     } catch (error) {
-      toast.error('Erro ao iniciar produção.');
+      toast.error(fullDict?.toast?.productionError || 'Erro ao iniciar produção.');
     } finally {
       setIsSubmitting(false);
     }
@@ -404,11 +412,11 @@ export default function PedidosPage() {
         });
       }
 
-      toast.success('Produção concluída e estoque atualizado!');
+      toast.success(fullDict?.toast?.productionCompleted || 'Produção concluída e estoque atualizado!');
       await loadData();
       setIsCompletionModalOpen(false);
     } catch (error) {
-      toast.error('Erro ao dar baixa na produção.');
+      toast.error(fullDict?.toast?.completionError || 'Erro ao dar baixa na produção.');
     } finally {
       setIsSubmitting(false);
     }
@@ -461,11 +469,11 @@ export default function PedidosPage() {
 
       await api.updateOrder(failureOrder.id, { status: 'pending', printer_id: null, inventory_id: null, inventory_ids: [] });
 
-      toast.success('Impressão abortada. Perdas registradas e rolo(s) liberado(s).');
+      toast.success(fullDict?.toast?.printAborted || 'Impressão abortada. Perdas registradas e rolo(s) liberado(s).');
       await loadData();
       setIsFailureModalOpen(false);
     } catch (error) {
-      toast.error('Erro ao registrar falha de produção.');
+      toast.error(fullDict?.toast?.abortError || 'Erro ao registrar falha de produção.');
     } finally {
       setIsSubmitting(false);
     }
@@ -481,10 +489,10 @@ export default function PedidosPage() {
     e.stopPropagation();
     try {
       await api.updateOrder(id, { status: 'delivered' });
-      toast.success('Pedido marcado como entregue!');
+      toast.success(fullDict?.toast?.orderMoved || 'Pedido marcado como entregue!');
       await loadData();
     } catch (error) {
-      toast.error('Erro ao finalizar pedido.');
+      toast.error(fullDict?.toast?.orderMoveError || 'Erro ao finalizar pedido.');
     }
   };
 
@@ -505,7 +513,7 @@ export default function PedidosPage() {
 
       // Regra de Negócio: Proibir volta a partir de acabamento
       if (currentIdx >= 2 && newIdx < currentIdx) {
-        toast.error('Movimento inválido: Não é possível retroceder a partir desta etapa.');
+        toast.error(fullDict?.toast?.invalidMove || 'Movimento inválido: Não é possível retroceder a partir desta etapa.');
         return;
       }
 
@@ -536,34 +544,35 @@ export default function PedidosPage() {
       try {
         await api.updateOrder(orderId, { status: newStatus });
       } catch (error) {
-        toast.error('Falha ao mover pedido.');
+        toast.error(fullDict?.toast?.orderMoveError || 'Falha ao mover pedido.');
         await loadData();
       }
     }
   };
 
   if (isLoading) {
-    return <div className="p-8 flex items-center justify-center h-full">Carregando fila...</div>;
+    return <div className="p-8 flex items-center justify-center h-full">{dict?.loading || 'Carregando fila...'}</div>;
   }
 
   const activeSkuForSetup = setupOrder ? skus.find(s => s.id === setupOrder.sku_id) : null;
   const activeSkuForCompletion = completionData ? skus.find(s => s.id === completionData.order.sku_id) : null;
 
   return (
-    <div className="p-6 h-full flex flex-col max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6 flex-shrink-0">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{dict.title}</h1>
-          <p className="text-muted-foreground mt-1">{dict.description}</p>
-        </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          {fullDict.forms.addOrder}
-        </button>
-      </div>
+    <PageLayout>
+      <PageHeader 
+        title={dict.title}
+        subtitle={dict.description}
+        icon={<ListTodo className="w-8 h-8 mr-3 text-primary" />}
+        action={
+          <button
+            onClick={openCreateModal}
+            className="flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {fullDict.forms.addOrder}
+          </button>
+        }
+      />
 
       <div className="flex-1 overflow-x-auto pb-4">
         <DndContext
@@ -611,7 +620,7 @@ export default function PedidosPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium">{fullDict.forms.order.sku}</label>
             <select required defaultValue={editingOrder?.sku_id || ''} name="sku" className="w-full p-2 border rounded-md text-sm bg-background">
-              <option value="">Selecione um produto do catálogo...</option>
+              <option value="">{dict?.selectSku || 'Selecione um produto do catálogo...'}</option>
               {skus.map(sku => (
                 <option key={sku.id} value={sku.id}>{sku.name} ({sku.filament_type})</option>
               ))}
@@ -630,7 +639,7 @@ export default function PedidosPage() {
             </div>
             {editingOrder && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">Status Atual</label>
+                <label className="text-sm font-medium">{dict?.statusLabel || 'Status Atual'}</label>
                 <select required defaultValue={editingOrder.status} name="status" className="w-full p-2 border rounded-md text-sm bg-background">
                   {columns.map(c => (
                     <option key={c.id} value={c.id}>{(dict.columns as any)[c.titleKey]}</option>
@@ -642,10 +651,10 @@ export default function PedidosPage() {
 
           <div className="flex justify-end space-x-2 pt-4">
             <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted transition-colors">
-              Cancelar
+              {fullDict?.common?.cancel || 'Cancelar'}
             </button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50">
-              {isSubmitting ? 'Salvando...' : 'Salvar Pedido'}
+              {isSubmitting ? fullDict?.common?.loading || 'Salvando...' : fullDict?.common?.save || 'Salvar Pedido'}
             </button>
           </div>
         </form>
@@ -655,18 +664,18 @@ export default function PedidosPage() {
       <Modal
         isOpen={isSetupModalOpen}
         onClose={() => !isSubmitting && setIsSetupModalOpen(false)}
-        title="Iniciar Produção"
+        title={dict?.setup?.title || 'Iniciar Produção'}
       >
         <form onSubmit={handleSetupPrint} className="space-y-4">
           <div className="bg-muted/50 p-4 rounded-md mb-4 border">
             <h3 className="font-bold text-sm mb-1">{activeSkuForSetup?.name}</h3>
-            <p className="text-xs text-muted-foreground">Material Necessário: {activeSkuForSetup?.filament_type} ({activeSkuForSetup?.weight_grams}g)</p>
+            <p className="text-xs text-muted-foreground">{dict?.setup?.materialNeeded || 'Material Necessário'}: {activeSkuForSetup?.filament_type} ({activeSkuForSetup?.weight_grams}g)</p>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-bold flex items-center">
               <PrinterIcon className="w-4 h-4 mr-2 text-primary" />
-              Alocar Impressora
+              {dict?.setup?.allocatePrinter || 'Alocar Impressora'}
             </label>
             <select
               required
@@ -675,42 +684,42 @@ export default function PedidosPage() {
               value={selectedPrinterForSetup}
               onChange={(e) => setSelectedPrinterForSetup(e.target.value)}
             >
-              <option value="">Selecione uma impressora livre...</option>
+              <option value="">{dict?.setup?.selectPrinter || 'Selecione uma impressora livre...'}</option>
               {printers.filter(p => p.status === 'idle').map(printer => (
                 <option key={printer.id} value={printer.id}>{printer.name} ({printer.model})</option>
               ))}
             </select>
             {printers.filter(p => p.status === 'idle').length === 0 && (
-              <p className="text-xs text-destructive">Nenhuma impressora livre no momento!</p>
+              <p className="text-xs text-destructive">{dict?.setup?.noPrintersAvailable || 'Nenhuma impressora livre no momento!'}</p>
             )}
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-bold flex items-center mt-4">
               <Package className="w-4 h-4 mr-2 text-amber-500" />
-              Alocar Filamentos (Estoque)
+              {dict?.setup?.allocateFilaments || 'Alocar Filamentos (Estoque)'}
             </label>
             {Array.from({ length: printers.find(p => p.id === selectedPrinterForSetup)?.spool_capacity || 1 }).map((_, i) => (
               <div key={i} className="mb-2">
-                <label className="text-xs font-semibold mb-1 block text-muted-foreground">Posição {i + 1}</label>
+                <label className="text-xs font-semibold mb-1 block text-muted-foreground">{dict?.setup?.slotPosition || 'Posição'} {i + 1}</label>
                 <select name={`inventory_id_${i}`} className="w-full p-2 border rounded-md text-sm bg-background">
-                  <option value="">Nenhum (Não dar baixa automática)</option>
+                  <option value="">{dict?.setup?.noAutoDeduction || 'Nenhum (Não dar baixa automática)'}</option>
                   {inventory.filter(inv => inv.status === 'available' && inv.remaining_grams > 0).map(inv => (
                     <option key={inv.id} value={inv.id}>{inv.material_type} {inv.color} - {inv.brand} ({inv.remaining_grams}g restantes)</option>
                   ))}
                 </select>
               </div>
             ))}
-            <p className="text-xs text-muted-foreground mt-2">Aconselhado para rastreio exato de consumo multi-color.</p>
+            <p className="text-xs text-muted-foreground mt-2">{dict?.setup?.multicolorTip || 'Aconselhado para rastreio exato de consumo multi-color.'}</p>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4 mt-6 border-t">
             <button type="button" onClick={() => setIsSetupModalOpen(false)} className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted transition-colors">
-              Cancelar
+              {fullDict?.common?.cancel || 'Cancelar'}
             </button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center">
               <Play className="w-4 h-4 mr-2" />
-              {isSubmitting ? 'Iniciando...' : 'Iniciar Impressão'}
+              {isSubmitting ? dict?.setup?.starting || 'Iniciando...' : dict?.setup?.startPrint || 'Iniciar Impressão'}
             </button>
           </div>
         </form>
@@ -720,15 +729,15 @@ export default function PedidosPage() {
       <Modal
         isOpen={isCompletionModalOpen}
         onClose={() => !isSubmitting && setIsCompletionModalOpen(false)}
-        title="Baixa de Produção"
+        title={dict?.completion?.title || 'Baixa de Produção'}
       >
         <form onSubmit={handleCompletePrint} className="space-y-4">
           <div className="bg-green-50 p-4 rounded-md mb-4 border border-green-200">
             <h3 className="font-bold text-sm text-green-800 mb-1 flex items-center">
               <Check className="w-4 h-4 mr-1" />
-              Impressão Finalizada
+              {dict?.completion?.printFinished || 'Impressão Finalizada'}
             </h3>
-            <p className="text-xs text-green-700">A impressora será liberada para o próximo pedido. Confirme os gastos para atualizar o estoque.</p>
+            <p className="text-xs text-green-700">{dict?.completion?.printFinishedDesc || 'A impressora será liberada para o próximo pedido. Confirme os gastos para atualizar o estoque.'}</p>
           </div>
 
           <div className="space-y-4">
@@ -743,11 +752,11 @@ export default function PedidosPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-600">Peso Gasto (g)</label>
+                      <label className="text-xs font-bold text-slate-600">{dict?.completion?.weightUsed || 'Peso Gasto (g)'}</label>
                       <input required type="number" name={`actual_weight_${invId}`} defaultValue={activeSkuForCompletion?.multicolor_weights?.[idx] ?? (idx === 0 ? activeSkuForCompletion?.weight_grams || 0 : 0)} className="w-full p-2 border rounded-md text-sm bg-background font-medium" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-600">Desperdício (g)</label>
+                      <label className="text-xs font-bold text-slate-600">{dict?.completion?.wasteWeight || 'Desperdício (g)'}</label>
                       <input required type="number" name={`waste_weight_${invId}`} defaultValue={0} className="w-full p-2 border rounded-md text-sm bg-background font-medium" />
                     </div>
                   </div>
@@ -758,11 +767,11 @@ export default function PedidosPage() {
             {!(completionData?.order.inventory_ids?.length || completionData?.order.inventory_id) && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Peso Gasto na Peça (g)</label>
+                  <label className="text-sm font-bold text-slate-700">{dict?.completion?.weightUsedFull || 'Peso Gasto na Peça (g)'}</label>
                   <input required type="number" name="actual_weight_fallback" defaultValue={activeSkuForCompletion?.weight_grams || 0} className="w-full p-2 border rounded-md text-sm bg-background font-medium" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Desperdício / Limpeza (g)</label>
+                  <label className="text-sm font-bold text-slate-700">{dict?.completion?.wasteWeightFull || 'Desperdício / Limpeza (g)'}</label>
                   <input required type="number" name="waste_weight_fallback" defaultValue={0} className="w-full p-2 border rounded-md text-sm bg-background font-medium" />
                 </div>
               </div>
@@ -771,24 +780,24 @@ export default function PedidosPage() {
 
           <div className="flex justify-end space-x-2 pt-4 mt-6 border-t">
             <button type="button" onClick={() => setIsCompletionModalOpen(false)} className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted transition-colors">
-              Cancelar
+              {fullDict?.common?.cancel || 'Cancelar'}
             </button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50">
-              {isSubmitting ? 'Processando...' : 'Confirmar e Liberar'}
+              {isSubmitting ? dict?.completion?.processing || 'Processando...' : dict?.completion?.confirmRelease || 'Confirmar e Liberar'}
             </button>
           </div>
         </form>
       </Modal>
 
       {/* Modal Falha de Produção */}
-      <Modal isOpen={isFailureModalOpen} onClose={() => !isSubmitting && setIsFailureModalOpen(false)} title="Falha de Produção (Abortar)">
+      <Modal isOpen={isFailureModalOpen} onClose={() => !isSubmitting && setIsFailureModalOpen(false)} title={dict?.failure?.title || 'Falha de Produção (Abortar)'}>
         <form onSubmit={handleFailurePrint} className="space-y-4">
           <div className="bg-red-50 p-4 rounded-md mb-4 border border-red-100">
             <h3 className="font-bold text-sm mb-1 text-red-900 flex items-center">
               <AlertTriangle className="w-4 h-4 mr-1" />
-              Impressão Abortada
+              {dict?.failure?.printAborted || 'Impressão Abortada'}
             </h3>
-            <p className="text-xs text-red-700">O pedido retornará para Aguardando Produção. Informe quanto material foi perdido (espaguete, base) para dar baixa no estoque.</p>
+            <p className="text-xs text-red-700">{dict?.failure?.printAbortedDesc || 'O pedido retornará para Aguardando Produção. Informe quanto material foi perdido (espaguete, base) para dar baixa no estoque.'}</p>
           </div>
 
           <div className="space-y-4">
@@ -802,7 +811,7 @@ export default function PedidosPage() {
                     {inv.material_type} {inv.color}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-red-700">Desperdício da Falha (g)</label>
+                    <label className="text-xs font-bold text-red-700">{dict?.failure?.failureWaste || 'Desperdício da Falha (g)'}</label>
                     <input required type="number" name={`waste_weight_${invId}`} defaultValue={0} className="w-full p-2 border rounded-md text-sm bg-background font-medium" />
                   </div>
                 </div>
@@ -811,7 +820,7 @@ export default function PedidosPage() {
 
             {!(failureOrder?.inventory_ids?.length || failureOrder?.inventory_id) && (
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Desperdício da Falha (g)</label>
+                <label className="text-sm font-bold text-slate-700">{dict?.failure?.failureWaste || 'Desperdício da Falha (g)'}</label>
                 <input required type="number" name="waste_weight_fallback" defaultValue={0} className="w-full p-2 border rounded-md text-sm bg-background font-medium" placeholder="Ex: 45" />
               </div>
             )}
@@ -819,15 +828,14 @@ export default function PedidosPage() {
 
           <div className="flex justify-end gap-2 pt-4 mt-6 border-t">
             <button type="button" onClick={() => setIsFailureModalOpen(false)} className="px-4 py-2 text-sm font-medium border rounded-md hover:bg-muted transition-colors">
-              Cancelar
+              {fullDict?.common?.cancel || 'Cancelar'}
             </button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-md disabled:opacity-50 hover:bg-red-700 transition-colors">
-              {isSubmitting ? 'Registrando...' : 'Registrar Perda e Abortar'}
+              {isSubmitting ? dict?.failure?.registering || 'Registrando...' : dict?.failure?.registerAbort || 'Registrar Perda e Abortar'}
             </button>
           </div>
         </form>
       </Modal>
-
-    </div>
+    </PageLayout>
   );
 }

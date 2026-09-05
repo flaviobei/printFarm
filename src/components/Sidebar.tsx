@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ListTodo, Package, Settings, Box, LogOut, CreditCard, Printer, Shield, History } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Package, Settings, Box, LogOut, CreditCard, Printer, Shield, History, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { useDictionary } from '@/lib/i18n';
@@ -51,6 +51,7 @@ export function Sidebar() {
     { name: 'Histórico', href: '/historico', icon: History },
     { name: sideDict.catalog, href: '/catalogo', icon: Box },
     { name: sideDict.inventory, href: '/estoque', icon: Package },
+    { name: sideDict.suppliers || 'Fornecedores', href: '/fornecedores', icon: Truck },
     { name: 'Impressoras', href: '/impressoras', icon: Printer },
     { name: sideDict.billing, href: '/assinatura', icon: CreditCard },
     { name: sideDict.settings, href: '/configuracoes', icon: Settings },
