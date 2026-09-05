@@ -499,7 +499,7 @@ export default function PedidosPage() {
     const order = orders.find(o => o.id === orderId);
 
     if (order && order.status !== newStatus) {
-      const colIndex = { pending: 0, printing: 1, finishing: 2, ready: 3, shipped: 4 };
+      const colIndex = { pending: 0, printing: 1, finishing: 2, ready: 3, shipped: 4, delivered: 5 };
       const currentIdx = colIndex[order.status as ColumnType];
       const newIdx = colIndex[newStatus];
 
