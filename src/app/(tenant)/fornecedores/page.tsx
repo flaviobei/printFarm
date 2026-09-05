@@ -32,7 +32,7 @@ export default function FornecedoresPage() {
       setSuppliers(data);
     } catch (error) {
       console.error(error);
-      toast.error(dict.common?.error || 'Erro ao carregar dados');
+      toast.error(t?.toast?.error || 'Erro ao carregar dados');
     } finally {
       setIsLoading(false);
     }
@@ -44,7 +44,7 @@ export default function FornecedoresPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(dict.common?.confirmDelete || 'Tem certeza que deseja excluir?')) return;
+    if (!confirm(dict.common?.deleteConfirm || 'Tem certeza que deseja excluir?')) return;
     
     try {
       await api.deleteSupplier(id);
