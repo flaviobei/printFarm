@@ -50,7 +50,7 @@ export default function EstoquePage() {
   async function loadData() {
     setIsLoading(true);
     const fetchedInventory = await api.getInventory();
-    
+
     // Process Grouping
     const grouped = fetchedInventory.reduce((acc, item) => {
       const key = `${item.brand}-${item.material_type}-${item.color_hex}`;
@@ -70,10 +70,10 @@ export default function EstoquePage() {
           inUseCount: 0,
         };
       }
-      
+
       acc[key].items.push(item);
       acc[key].totalGrams += Number(item.remaining_grams);
-      
+
       if (item.status === 'in_use') {
         acc[key].inUseCount++;
       } else if (Number(item.remaining_grams) >= Number(item.initial_weight_grams)) {
@@ -83,7 +83,7 @@ export default function EstoquePage() {
       }
       return acc;
     }, {} as Record<string, InventoryGroup>);
-    
+
     setGroups(Object.values(grouped));
     setInventory(fetchedInventory);
     setIsLoading(false);
@@ -179,7 +179,7 @@ export default function EstoquePage() {
     e.preventDefault();
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
-    
+
     const inventoryData: Partial<Inventory> = {
       material_type: formData.get('material_type') as string,
       brand: formData.get('brand') as string,
@@ -211,11 +211,11 @@ export default function EstoquePage() {
   const handleSaveBatch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!batchGroup || batchGroup.items.length === 0) return;
-    
+
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     const quantity = Number(formData.get('quantity'));
-    
+
     if (quantity <= 0 || quantity > 50) {
       toast.error('Quantidade inválida (1-50).');
       setIsSubmitting(false);
@@ -229,7 +229,7 @@ export default function EstoquePage() {
       color: template.color,
       color_hex: template.color_hex,
       initial_weight_grams: template.initial_weight_grams,
-      remaining_grams: template.initial_weight_grams, // Sempre nasce cheio
+      remaining_grams: template.initial_weight_grams,
       temp_min: template.temp_min,
       temp_max: template.temp_max,
       status: 'available'
@@ -276,7 +276,7 @@ export default function EstoquePage() {
           <h1 className="text-3xl font-bold tracking-tight">{estDict.title}</h1>
           <p className="text-muted-foreground mt-1">Gestão de Perfil de Materiais e Instâncias (Rolos)</p>
         </div>
-        <button 
+        <button
           onClick={openCreateModal}
           className="flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors"
         >
@@ -296,11 +296,11 @@ export default function EstoquePage() {
           <div key={group.key} className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
             {/* Header do Perfil de Material (Resumo) */}
             <div className="bg-muted/30 p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-              <div 
+              <div
                 className="flex items-center space-x-4 cursor-pointer flex-1"
                 onClick={() => toggleGroup(group.key)}
               >
-                <div 
+                <div
                   className="w-12 h-12 rounded-full border-2 border-gray-300 shadow-sm flex-shrink-0"
                   style={{ backgroundColor: group.color_hex || '#cccccc' }}
                 />
@@ -322,7 +322,7 @@ export default function EstoquePage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-6">
                 {/* Badges de Quantidade */}
                 <div className="flex space-x-2">
@@ -342,14 +342,14 @@ export default function EstoquePage() {
 
                 {/* Botões do Perfil */}
                 <div className="flex space-x-2 border-l pl-6">
-                  <button 
+                  <button
                     onClick={() => openBatchModal(group)}
                     className="flex items-center bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-1.5 rounded-md text-sm font-medium transition-colors border"
                   >
                     <Layers className="w-4 h-4 mr-1.5" />
                     + Lote
                   </button>
-                  <button 
+                  <button
                     onClick={() => toggleGroup(group.key)}
                     className="p-1.5 hover:bg-background rounded-md text-muted-foreground border border-transparent hover:border-border transition-colors"
                   >
@@ -388,7 +388,7 @@ export default function EstoquePage() {
                               <div className="font-medium min-w-[50px]">{item.remaining_grams}g</div>
                               <div className="flex-1 max-w-[200px]">
                                 <div className="w-full bg-secondary rounded-full h-2 shadow-inner overflow-hidden border border-gray-200">
-                                  <div 
+                                  <div
                                     className="h-full"
                                     style={{ width: `${percentage}%`, backgroundColor: item.color_hex || '#cccccc' }}
                                   ></div>
@@ -405,28 +405,28 @@ export default function EstoquePage() {
                           </td>
                           <td className="px-6 py-3 text-right">
                             <div className="flex justify-end gap-1">
-                              <button 
+                              <button
                                 onClick={() => openLabelModal(item)}
                                 className="p-1.5 text-muted-foreground hover:bg-muted rounded-md transition-colors"
                                 title="Gerar Etiqueta QR"
                               >
                                 <QrCode className="w-4 h-4" />
                               </button>
-                              <button 
+                              <button
                                 onClick={() => toggleStatus(item)}
                                 className="p-1.5 text-muted-foreground hover:bg-muted rounded-md transition-colors"
                                 title={item.status === 'in_use' ? 'Devolver ao Estoque' : 'Colocar em Uso (Manual)'}
                               >
                                 {item.status === 'in_use' ? <Pause className="w-4 h-4 text-amber-500" /> : <Play className="w-4 h-4 text-blue-500" />}
                               </button>
-                              <button 
+                              <button
                                 onClick={() => openEditModal(item)}
                                 className="p-1.5 text-muted-foreground hover:bg-muted rounded-md transition-colors"
                                 title="Editar Peso Manualmente"
                               >
                                 <Edit2 className="w-4 h-4" />
                               </button>
-                              <button 
+                              <button
                                 onClick={() => handleDeleteInventory(item.id)}
                                 className="p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-md transition-colors"
                                 title="Descartar Rolo"
@@ -447,7 +447,7 @@ export default function EstoquePage() {
       </div>
 
       {/* Modal Genérico */}
-      <Modal isOpen={isModalOpen} onClose={() => !isSubmitting && setIsModalOpen(false)} title={editingItem ? dict.forms.editInventory : 'Criar Novo Perfil / Rolo'}>
+      <Modal isOpen={isModalOpen} onClose={() => !isSubmitting && setIsModalOpen(false)} title={editingItem ? 'Editar Perfil / Rolo' : 'Criar Novo Perfil / Rolo'}>
         <form onSubmit={handleSaveInventory} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -459,7 +459,7 @@ export default function EstoquePage() {
               <input required name="brand" defaultValue={editingItem?.brand} placeholder="eSun, Hatchbox..." className="w-full p-2 border rounded-md" />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-bold block mb-1">Nome da Cor</label>
@@ -506,7 +506,7 @@ export default function EstoquePage() {
               {dict.common.cancel}
             </button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md disabled:opacity-50 hover:bg-primary/90">
-              {isSubmitting ? dict.common.saving : dict.common.save}
+              {isSubmitting ? dict.common.loading : dict.common.save}
             </button>
           </div>
         </form>
@@ -524,14 +524,14 @@ export default function EstoquePage() {
 
             <div>
               <label className="text-sm font-bold block mb-2">Quantos rolos idênticos acabaram de chegar?</label>
-              <input 
-                required 
-                type="number" 
-                name="quantity" 
-                min="1" 
-                max="50" 
+              <input
+                required
+                type="number"
+                name="quantity"
+                min="1"
+                max="50"
                 defaultValue="5"
-                className="w-full p-3 border rounded-md text-lg font-medium text-center" 
+                className="w-full p-3 border rounded-md text-lg font-medium text-center"
               />
               <p className="text-xs text-muted-foreground mt-2 text-center">Serão criadas instâncias independentes para rastreio exato.</p>
             </div>
@@ -558,15 +558,15 @@ export default function EstoquePage() {
                 <h2 className="font-black text-2xl uppercase tracking-widest">{labelItem.brand}</h2>
                 <h3 className="font-bold text-lg">{labelItem.material_type}</h3>
               </div>
-              
+
               <div className="flex justify-center mb-4">
-                <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${labelItem.id}`} 
-                  alt="QR Code" 
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${labelItem.id}`}
+                  alt="QR Code"
                   className="rounded-md border p-1"
                 />
               </div>
-              
+
               <div className="text-center space-y-1">
                 <p className="font-bold flex justify-center items-center">
                   <div className="w-4 h-4 rounded-full border border-slate-300 mr-2" style={{ backgroundColor: labelItem.color_hex }} />

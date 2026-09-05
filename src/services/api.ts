@@ -160,8 +160,8 @@ export const api = {
     if (error) {
       // Mock se a tabela não existir
       return [
-        { id: '1', user_id: 'x', name: 'Ender 3 V2', brand: 'Creality', model: 'Ender 3', power_watts: 350, status: 'idle', created_at: new Date().toISOString() },
-        { id: '2', user_id: 'x', name: 'Bambu P1P', brand: 'Bambu Lab', model: 'P1P', power_watts: 1000, status: 'printing', created_at: new Date().toISOString() },
+        { id: '1', user_id: 'x', name: 'Ender 3 V2', brand: 'Creality', model: 'Ender 3', power_watts: 350, status: 'idle', created_at: new Date().toISOString(), spool_capacity: 1 },
+        { id: '2', user_id: 'x', name: 'Bambu P1P', brand: 'Bambu Lab', model: 'P1P', power_watts: 1000, status: 'printing', created_at: new Date().toISOString(), spool_capacity: 3 },
       ];
     }
     return data || [];
@@ -183,27 +183,6 @@ export const api = {
       return { id: Math.random().toString(), ...printer };
     }
     return data;
-  },
-
-  async createInventory(data: Partial<Inventory>): Promise<Inventory> {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not logged in');
-
-    const { data: created, error } = await supabase.from('inventory').insert([{ ...data, user_id: user.id }]).select().single();
-    if (error) throw error;
-    return created;
-  },
-
-  async createInventoryBatch(dataList: Partial<Inventory>[]): Promise<Inventory[]> {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not logged in');
-
-    const mappedData = dataList.map(item => ({ ...item, user_id: user.id }));
-    const { data: created, error } = await supabase.from('inventory').insert(mappedData).select();
-    if (error) throw error;
-    return created || [];
   },
 
   async updatePrinter(id: string, updates: Partial<Printer>) {
@@ -233,14 +212,14 @@ export const api = {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
-    
+
     const { data, error } = await supabase
       .from('user_settings')
       .update(settings)
       .eq('id', user.id)
       .select()
       .single();
-      
+
     if (error) {
       console.error('Error updating user settings:', error.message, error.details, error.hint);
       throw error;
@@ -287,7 +266,7 @@ export const api = {
     }
     return data || [];
   },
-  
+
   // Função temporária para injetar os mocks no BD
   async seedDatabase(userId: string) {
     const supabase = createClient();
@@ -295,7 +274,7 @@ export const api = {
     // 1. Inserir SKUs
     const sku1Id = crypto.randomUUID();
     const sku2Id = crypto.randomUUID();
-    
+
     await supabase.from('skus').insert([
       {
         id: sku1Id,
@@ -387,12 +366,12 @@ export const api = {
     const supabase = createClient();
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('User not authenticated');
-    
+
     const { data, error } = await supabase.from('skus').insert([{
       ...sku,
       user_id: userData.user.id
     }]).select().single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -418,12 +397,12 @@ export const api = {
     const supabase = createClient();
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('User not authenticated');
-    
+
     const { data, error } = await supabase.from('orders').insert([{
       ...order,
       user_id: userData.user.id
     }]).select().single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -445,18 +424,30 @@ export const api = {
   // ==========================================
   // CRUD - Inventory (Estoque)
   // ==========================================
-  async createInventory(inventory: Omit<Inventory, 'id' | 'created_at' | 'user_id'>) {
+  async createInventory(inventory: Partial<Inventory>): Promise<Inventory> {
     const supabase = createClient();
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('User not authenticated');
-    
+
     const { data, error } = await supabase.from('inventory').insert([{
       ...inventory,
       user_id: userData.user.id
     }]).select().single();
-    
+
     if (error) throw error;
     return data;
+  },
+
+  async createInventoryBatch(dataList: Partial<Inventory>[]): Promise<Inventory[]> {
+    const supabase = createClient();
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error('Not logged in');
+
+    const mappedData = dataList.map(item => ({ ...item, user_id: userData.user!.id }));
+    const { data, error } = await supabase.from('inventory').insert(mappedData).select();
+
+    if (error) throw error;
+    return data || [];
   },
 
   async deleteInventory(id: string) {
@@ -466,13 +457,16 @@ export const api = {
     return true;
   },
 
-  async updateInventory(id: string, updates: Partial<Omit<Inventory, 'id' | 'created_at' | 'user_id'>>) {
+  async updateInventory(id: string, updates: Partial<Inventory>) {
     const supabase = createClient();
     const { data, error } = await supabase.from('inventory').update(updates).eq('id', id).select().single();
     if (error) throw error;
     return data;
   },
 
+  // ==========================================
+  // Material Logs
+  // ==========================================
   async logMaterialUsage(log: Partial<MaterialLog>) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();

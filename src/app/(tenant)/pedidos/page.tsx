@@ -30,22 +30,22 @@ const columns: { id: ColumnType; titleKey: string; icon: any; colorClass: string
   { id: 'shipped', titleKey: 'shipped', icon: Truck, colorClass: 'text-slate-500' },
 ];
 
-function DroppableColumn({ 
-  column, 
-  title, 
-  orders, 
-  skus, 
+function DroppableColumn({
+  column,
+  title,
+  orders,
+  skus,
   printers,
-  onEdit, 
+  onEdit,
   onDelete,
-  onDeliver 
-}: { 
-  column: typeof columns[0], 
-  title: string, 
-  orders: Order[], 
-  skus: SKU[], 
+  onDeliver
+}: {
+  column: typeof columns[0],
+  title: string,
+  orders: Order[],
+  skus: SKU[],
   printers: Printer[],
-  onEdit: (o: Order, e: React.MouseEvent) => void, 
+  onEdit: (o: Order, e: React.MouseEvent) => void,
   onDelete: (id: string, e: React.MouseEvent) => void,
   onDeliver: (id: string, e: React.MouseEvent) => void
 }) {
@@ -54,7 +54,7 @@ function DroppableColumn({
   });
 
   return (
-    <div 
+    <div
       ref={setNodeRef}
       className={cn(
         "flex flex-col w-[280px] max-h-full rounded-lg p-3 border shadow-sm transition-colors",
@@ -70,16 +70,16 @@ function DroppableColumn({
           {orders.length}
         </span>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto space-y-3 min-h-[150px]">
         {orders.map((order) => (
-          <DraggableCard 
-            key={order.id} 
-            order={order} 
-            sku={skus.find(s => s.id === order.sku_id)} 
+          <DraggableCard
+            key={order.id}
+            order={order}
+            sku={skus.find(s => s.id === order.sku_id)}
             printer={printers.find(p => p.id === order.printer_id)}
-            onEdit={onEdit} 
-            onDelete={onDelete} 
+            onEdit={onEdit}
+            onDelete={onDelete}
             onDeliver={onDeliver}
           />
         ))}
@@ -93,19 +93,19 @@ function DroppableColumn({
   );
 }
 
-function DraggableCard({ 
-  order, 
-  sku, 
+function DraggableCard({
+  order,
+  sku,
   printer,
-  onEdit, 
-  onDelete, 
+  onEdit,
+  onDelete,
   onDeliver,
-  isOverlay 
-}: { 
-  order: Order, 
-  sku?: SKU, 
+  isOverlay
+}: {
+  order: Order,
+  sku?: SKU,
   printer?: Printer,
-  onEdit?: (o: Order, e: React.MouseEvent) => void, 
+  onEdit?: (o: Order, e: React.MouseEvent) => void,
   onDelete?: (id: string, e: React.MouseEvent) => void,
   onDeliver?: (id: string, e: React.MouseEvent) => void,
   isOverlay?: boolean
@@ -123,10 +123,10 @@ function DraggableCard({
   const isNearDeadline = deadline.getTime() - Date.now() < 24 * 60 * 60 * 1000;
 
   return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
-      {...attributes} 
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
       {...listeners}
       className={cn(
         "group bg-card p-3 rounded-md border shadow-sm flex flex-col cursor-grab active:cursor-grabbing hover:border-primary transition-colors relative",
@@ -136,7 +136,7 @@ function DraggableCard({
     >
       {!isOverlay && onEdit && onDelete && (
         <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex items-center space-x-1 transition-all bg-card/90 rounded-full p-1 border shadow-sm z-10">
-          <button 
+          <button
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => onEdit(order, e)}
             className="text-muted-foreground hover:text-primary transition-colors p-1 cursor-pointer"
@@ -144,7 +144,7 @@ function DraggableCard({
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
-          <button 
+          <button
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => onDelete(order.id, e)}
             className="text-muted-foreground hover:text-destructive transition-colors p-1 cursor-pointer"
@@ -154,7 +154,7 @@ function DraggableCard({
           </button>
         </div>
       )}
-      
+
       <div className="flex justify-between items-start mb-2 pr-12">
         <span className="text-xs font-bold text-muted-foreground">{order.id.split('-')[0]}</span>
         <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
@@ -174,7 +174,7 @@ function DraggableCard({
           <p className="text-xs text-muted-foreground">Cliente: {order.customer_name}</p>
         </div>
       </div>
-      
+
       <div className="flex flex-col mt-auto gap-2">
         <div className="flex items-center justify-between">
           <div className={cn("flex items-center text-xs font-medium", isNearDeadline ? "text-destructive" : "text-muted-foreground")}>
@@ -188,7 +188,7 @@ function DraggableCard({
             </div>
           )}
         </div>
-        
+
         {order.status === 'shipped' && onDeliver && (
           <button
             onPointerDown={(e) => e.stopPropagation()}
@@ -207,7 +207,7 @@ function DraggableCard({
 export default function PedidosPage() {
   const { dict: fullDict } = useDictionary();
   const dict = fullDict.pedidos;
-  
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [skus, setSkus] = useState<SKU[]>([]);
   const [printers, setPrinters] = useState<Printer[]>([]);
@@ -218,7 +218,7 @@ export default function PedidosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
   const [setupOrder, setSetupOrder] = useState<Order | null>(null);
   const [selectedPrinterForSetup, setSelectedPrinterForSetup] = useState<string>('');
@@ -271,7 +271,7 @@ export default function PedidosPage() {
     e.preventDefault();
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
-    
+
     const orderData = {
       sku_id: formData.get('sku') as string,
       customer_name: formData.get('customerName') as string,
@@ -313,13 +313,13 @@ export default function PedidosPage() {
     e.preventDefault();
     if (!setupOrder) return;
     setIsSubmitting(true);
-    
+
     const formData = new FormData(e.currentTarget);
     const printerId = formData.get('printer_id') as string;
-    
+
     const selectedPrinter = printers.find(p => p.id === printerId);
     const spoolCapacity = selectedPrinter?.spool_capacity || 1;
-    
+
     const inventoryIds: string[] = [];
     for (let i = 0; i < spoolCapacity; i++) {
       const val = formData.get(`inventory_id_${i}`) as string;
@@ -327,9 +327,9 @@ export default function PedidosPage() {
     }
 
     try {
-      await api.updateOrder(setupOrder.id, { 
-        status: 'printing', 
-        printer_id: printerId, 
+      await api.updateOrder(setupOrder.id, {
+        status: 'printing',
+        printer_id: printerId,
         inventory_ids: inventoryIds.length > 0 ? inventoryIds : undefined,
         inventory_id: inventoryIds.length > 0 ? inventoryIds[0] : null // Legacy fallback
       });
@@ -337,7 +337,7 @@ export default function PedidosPage() {
       for (const invId of inventoryIds) {
         await api.updateInventory(invId, { status: 'in_use' });
       }
-      
+
       toast.success('Produção Iniciada!');
       await loadData();
       setIsSetupModalOpen(false);
@@ -353,21 +353,21 @@ export default function PedidosPage() {
     e.preventDefault();
     if (!completionData) return;
     setIsSubmitting(true);
-    
+
     const formData = new FormData(e.currentTarget);
     const order = completionData.order;
 
     try {
-      await api.updateOrder(order.id, { 
-        status: completionData.nextStatus 
+      await api.updateOrder(order.id, {
+        status: completionData.nextStatus
       });
-      
+
       if (order.printer_id) {
         await api.updatePrinter(order.printer_id, { status: 'idle' });
       }
 
       const idsToProcess = order.inventory_ids?.length ? order.inventory_ids : order.inventory_id ? [order.inventory_id] : [];
-      
+
       if (idsToProcess.length > 0) {
         for (const invId of idsToProcess) {
           const actualWeight = Number(formData.get(`actual_weight_${invId}`) || 0);
@@ -377,9 +377,9 @@ export default function PedidosPage() {
           const inv = inventory.find(i => i.id === invId);
           if (inv) {
             const newRemaining = Math.max(0, inv.remaining_grams - totalSpent);
-            await api.updateInventory(inv.id, { 
+            await api.updateInventory(inv.id, {
               remaining_grams: newRemaining,
-              status: 'available' 
+              status: 'available'
             });
             await api.logMaterialUsage({
               order_id: order.id,
@@ -417,7 +417,7 @@ export default function PedidosPage() {
   const handleFailurePrint = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!failureOrder) return;
-    
+
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
 
@@ -427,16 +427,16 @@ export default function PedidosPage() {
       }
 
       const idsToProcess = failureOrder.inventory_ids?.length ? failureOrder.inventory_ids : failureOrder.inventory_id ? [failureOrder.inventory_id] : [];
-      
+
       if (idsToProcess.length > 0) {
         for (const invId of idsToProcess) {
           const wasteWeight = Number(formData.get(`waste_weight_${invId}`) || 0);
           const inv = inventory.find(i => i.id === invId);
           if (inv) {
             const newRemaining = Math.max(0, inv.remaining_grams - wasteWeight);
-            await api.updateInventory(inv.id, { 
+            await api.updateInventory(inv.id, {
               remaining_grams: newRemaining,
-              status: 'available' 
+              status: 'available'
             });
             await api.logMaterialUsage({
               order_id: failureOrder.id,
@@ -460,7 +460,7 @@ export default function PedidosPage() {
       }
 
       await api.updateOrder(failureOrder.id, { status: 'pending', printer_id: null, inventory_id: null, inventory_ids: [] });
-      
+
       toast.success('Impressão abortada. Perdas registradas e rolo(s) liberado(s).');
       await loadData();
       setIsFailureModalOpen(false);
@@ -532,7 +532,7 @@ export default function PedidosPage() {
 
       // Optimistic update for simple moves (e.g., finishing -> ready)
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-      
+
       try {
         await api.updateOrder(orderId, { status: newStatus });
       } catch (error) {
@@ -556,7 +556,7 @@ export default function PedidosPage() {
           <h1 className="text-3xl font-bold tracking-tight">{dict.title}</h1>
           <p className="text-muted-foreground mt-1">{dict.description}</p>
         </div>
-        <button 
+        <button
           onClick={openCreateModal}
           className="flex items-center bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors"
         >
@@ -564,9 +564,9 @@ export default function PedidosPage() {
           {fullDict.forms.addOrder}
         </button>
       </div>
-      
+
       <div className="flex-1 overflow-x-auto pb-4">
-        <DndContext 
+        <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}
           onDragStart={handleDragStart}
@@ -574,7 +574,7 @@ export default function PedidosPage() {
         >
           <div className="flex h-full min-w-max space-x-4">
             {columns.map((column) => (
-              <DroppableColumn 
+              <DroppableColumn
                 key={column.id}
                 column={column}
                 title={(dict.columns as any)[column.titleKey]}
@@ -587,11 +587,11 @@ export default function PedidosPage() {
               />
             ))}
           </div>
-          
+
           <DragOverlay>
             {activeOrder ? (
-              <DraggableCard 
-                order={activeOrder} 
+              <DraggableCard
+                order={activeOrder}
                 sku={skus.find(s => s.id === activeOrder.sku_id)}
                 printer={printers.find(p => p.id === activeOrder.printer_id)}
                 isOverlay
@@ -602,8 +602,8 @@ export default function PedidosPage() {
       </div>
 
       {/* Modal Genérico de Criar/Editar Pedido */}
-      <Modal 
-        isOpen={isModalOpen} 
+      <Modal
+        isOpen={isModalOpen}
         onClose={() => !isSubmitting && setIsModalOpen(false)}
         title={editingOrder ? fullDict.common.edit : fullDict.forms.addOrder}
       >
@@ -617,12 +617,12 @@ export default function PedidosPage() {
               ))}
             </select>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">{fullDict.forms.order.customerName}</label>
             <input required defaultValue={editingOrder?.customer_name || ''} name="customerName" type="text" className="w-full p-2 border rounded-md text-sm bg-background" placeholder="Nome do Cliente ou Plataforma" />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">{fullDict.forms.order.deadline}</label>
@@ -639,7 +639,7 @@ export default function PedidosPage() {
               </div>
             )}
           </div>
-          
+
           <div className="flex justify-end space-x-2 pt-4">
             <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted transition-colors">
               Cancelar
@@ -652,8 +652,8 @@ export default function PedidosPage() {
       </Modal>
 
       {/* Modal de Setup de Impressão */}
-      <Modal 
-        isOpen={isSetupModalOpen} 
+      <Modal
+        isOpen={isSetupModalOpen}
         onClose={() => !isSubmitting && setIsSetupModalOpen(false)}
         title="Iniciar Produção"
       >
@@ -668,9 +668,9 @@ export default function PedidosPage() {
               <PrinterIcon className="w-4 h-4 mr-2 text-primary" />
               Alocar Impressora
             </label>
-            <select 
-              required 
-              name="printer_id" 
+            <select
+              required
+              name="printer_id"
               className="w-full p-2 border rounded-md text-sm bg-background font-medium"
               value={selectedPrinterForSetup}
               onChange={(e) => setSelectedPrinterForSetup(e.target.value)}
@@ -684,7 +684,7 @@ export default function PedidosPage() {
               <p className="text-xs text-destructive">Nenhuma impressora livre no momento!</p>
             )}
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-bold flex items-center mt-4">
               <Package className="w-4 h-4 mr-2 text-amber-500" />
@@ -703,7 +703,7 @@ export default function PedidosPage() {
             ))}
             <p className="text-xs text-muted-foreground mt-2">Aconselhado para rastreio exato de consumo multi-color.</p>
           </div>
-          
+
           <div className="flex justify-end space-x-2 pt-4 mt-6 border-t">
             <button type="button" onClick={() => setIsSetupModalOpen(false)} className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted transition-colors">
               Cancelar
@@ -717,8 +717,8 @@ export default function PedidosPage() {
       </Modal>
 
       {/* Modal de Baixa de Impressão */}
-      <Modal 
-        isOpen={isCompletionModalOpen} 
+      <Modal
+        isOpen={isCompletionModalOpen}
         onClose={() => !isSubmitting && setIsCompletionModalOpen(false)}
         title="Baixa de Produção"
       >
@@ -754,7 +754,7 @@ export default function PedidosPage() {
                 </div>
               );
             })}
-            
+
             {!(completionData?.order.inventory_ids?.length || completionData?.order.inventory_id) && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -768,7 +768,7 @@ export default function PedidosPage() {
               </div>
             )}
           </div>
-          
+
           <div className="flex justify-end space-x-2 pt-4 mt-6 border-t">
             <button type="button" onClick={() => setIsCompletionModalOpen(false)} className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted transition-colors">
               Cancelar
@@ -808,7 +808,7 @@ export default function PedidosPage() {
                 </div>
               );
             })}
-            
+
             {!(failureOrder?.inventory_ids?.length || failureOrder?.inventory_id) && (
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">Desperdício da Falha (g)</label>
