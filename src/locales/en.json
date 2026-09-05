@@ -5,6 +5,8 @@
     "productionQueue": "Production Queue",
     "catalog": "SKU Catalog",
     "inventory": "Inventory",
+    "printers": "Printers",
+    "history": "History",
     "settings": "Settings",
     "billing": "Billing",
     "admin": "Super Admin",
@@ -36,8 +38,47 @@
       "shipped": "Shipped"
     },
     "cards": {
-      "deadline": "Deadline:"
-    }
+      "deadline": "Deadline:",
+      "customer": "Customer"
+    },
+    "setup": {
+      "title": "Start Production",
+      "materialNeeded": "Material Needed",
+      "allocatePrinter": "Allocate Printer",
+      "allocateFilaments": "Allocate Filaments (Inventory)",
+      "selectPrinter": "Select an available printer...",
+      "noPrintersAvailable": "No printers available at the moment!",
+      "slotPosition": "Slot",
+      "noAutoDeduction": "None (No automatic deduction)",
+      "multicolorTip": "Recommended for accurate multi-color consumption tracking.",
+      "startPrint": "Start Printing",
+      "starting": "Starting..."
+    },
+    "completion": {
+      "title": "Production Sign-Off",
+      "printFinished": "Print Finished",
+      "printFinishedDesc": "The printer will be released for the next order. Confirm the consumption to update inventory.",
+      "weightUsed": "Weight Used (g)",
+      "wasteWeight": "Waste (g)",
+      "weightUsedFull": "Weight Used on Part (g)",
+      "wasteWeightFull": "Waste / Cleanup (g)",
+      "confirmRelease": "Confirm & Release",
+      "processing": "Processing..."
+    },
+    "failure": {
+      "title": "Production Failure (Abort)",
+      "printAborted": "Print Aborted",
+      "printAbortedDesc": "The order will return to Awaiting Production. Report how much material was wasted (spaghetti, base) to deduct from inventory.",
+      "failureWaste": "Failure Waste (g)",
+      "registerAbort": "Register Loss & Abort",
+      "registering": "Registering..."
+    },
+    "delivery": {
+      "confirmDelivery": "Confirm Delivery"
+    },
+    "loading": "Loading queue...",
+    "selectSku": "Select a product from the catalog...",
+    "statusLabel": "Current Status"
   },
   "catalogo": {
     "title": "SKU Catalog",
@@ -50,6 +91,45 @@
       "netProfit": "Net Profit",
       "margin": "Margin",
       "actions": "Actions"
+    },
+    "export": "Export",
+    "import": "Import",
+    "noProducts": "No products registered yet.",
+    "productPhoto": "Product Photo",
+    "changeImage": "Change Image",
+    "uploadImage": "Upload Image",
+    "multicolor": "Multi-Color Part",
+    "multicolorTip": "Enter the estimated weight for each color. Total weight is calculated automatically.",
+    "addColor": "Add Color",
+    "colorLabel": "Color",
+    "totalLabel": "Total",
+    "saving": "Saving...",
+    "loading": "Loading catalog..."
+  },
+  "impressoras": {
+    "title": "Manage Printers",
+    "description": "Control your 3D printing machine fleet.",
+    "newPrinter": "New Printer",
+    "noPrinters": "No printers registered yet.",
+    "loading": "Loading printers...",
+    "form": {
+      "nickname": "Nickname (Name)",
+      "brand": "Brand",
+      "model": "Model",
+      "watts": "Average Watts",
+      "spoolCapacity": "Simultaneous Colors",
+      "spoolCapacityTooltip": "Multi-color support (AMS, MMU)",
+      "currentStatus": "Current Status"
+    },
+    "status": {
+      "idle": "Idle / Stopped",
+      "printing": "Printing",
+      "maintenance": "In Maintenance"
+    },
+    "statusLabel": {
+      "idle": "Idle",
+      "printing": "Printing",
+      "maintenance": "Maintenance"
     }
   },
   "estoque": {
@@ -66,7 +146,34 @@
       "ok": "Normal",
       "low": "Low",
       "critical": "Critical"
+    },
+    "form": {
+      "usageStatus": "Usage Status",
+      "available": "Available in Stock",
+      "inUse": "In Use (Checkout)"
+    },
+    "batch": {
+      "intro": "You are receiving the material:",
+      "sealedWeight": "Standard Sealed Weight",
+      "howManySpools": "How many identical spools just arrived?",
+      "instanceTip": "Individual instances will be created for exact tracking."
     }
+  },
+  "historico": {
+    "title": "Order History",
+    "description": "View the complete history of delivered orders.",
+    "table": {
+      "orderId": "Order ID",
+      "customer": "Customer",
+      "product": "Product (SKU)",
+      "createdAt": "Created At",
+      "finalStatus": "Final Status"
+    },
+    "loading": "Loading history...",
+    "noOrders": "No delivered orders yet",
+    "noOrdersTip": "Orders will appear here when finalized in the Kanban.",
+    "delivered": "Delivered",
+    "search": "Search by customer or product..."
   },
   "settings": {
     "title": "Machine Settings",
@@ -115,7 +222,10 @@
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
-    "deleteConfirm": "Are you sure you want to delete this item?"
+    "deleteConfirm": "Are you sure you want to delete this item?",
+    "loading": "Loading...",
+    "product": "Product",
+    "colors": "colors"
   },
   "billing": {
     "title": "Subscription Plans",
@@ -145,5 +255,28 @@
       "feat_dedicated_manager": "Dedicated Account Manager",
       "feat_sla": "99.9% Uptime SLA"
     }
+  },
+  "toast": {
+    "productionStarted": "Production Started!",
+    "productionCompleted": "Production completed and inventory updated!",
+    "productionError": "Error starting production.",
+    "completionError": "Error signing off production.",
+    "printAborted": "Print aborted. Losses registered and spool(s) released.",
+    "abortError": "Error aborting print.",
+    "orderMoved": "Order moved!",
+    "orderMoveError": "Failed to move order.",
+    "orderRemoved": "Order removed!",
+    "orderRemoveError": "Error deleting order.",
+    "printerRemoved": "Printer removed successfully!",
+    "printerRemoveError": "Error removing printer.",
+    "printerUpdated": "Printer updated!",
+    "printerAdded": "Printer registered!",
+    "printerSaveError": "Error saving printer.",
+    "skuSaveError": "Error saving product.",
+    "skuDeleteError": "Error deleting product. It may be linked to an existing order.",
+    "imageUploadError": "Error uploading image.",
+    "exportSuccess": "SKUs exported successfully!",
+    "importComplete": "Import complete",
+    "importEmpty": "CSV file is empty or has no data."
   }
 }

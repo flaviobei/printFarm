@@ -6,7 +6,7 @@ import { api, Order, SKU, UserSettings } from '@/services/api';
 import { calculatePrintCost, CostParameters } from '@/services/cost-calculator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { DollarSign, TrendingUp, Package, Printer, Database } from 'lucide-react';
+import { DollarSign, TrendingUp, Package, Printer, Database, Clock, Play, CheckCircle, Wrench } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function Home() {
@@ -16,6 +16,7 @@ export default function Home() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [skus, setSkus] = useState<SKU[]>([]);
   const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [printers, setPrinters] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSeeding, setIsSeeding] = useState(false);
 
@@ -25,23 +26,17 @@ export default function Home() {
       
       const supabase = createClient();
       const { data: userData } = await supabase.auth.getUser();
-      
-      const storedDevView = localStorage.getItem('dev_admin_view');
-      const shouldBeAdmin = storedDevView !== 'false';
 
-      if (shouldBeAdmin && (userData.user?.email === 'flaviobei@gmail.com' || userData.user?.email?.startsWith('admin@'))) {
-        window.location.href = '/admin';
-        return;
-      }
-
-      const [fetchedOrders, fetchedSkus, fetchedSettings] = await Promise.all([
+      const [fetchedOrders, fetchedSkus, fetchedSettings, fetchedPrinters] = await Promise.all([
         api.getOrders(),
         api.getSKUs(),
-        api.getUserSettings()
+        api.getUserSettings(),
+        api.getPrinters()
       ]);
       setOrders(fetchedOrders);
       setSkus(fetchedSkus);
       setSettings(fetchedSettings);
+      setPrinters(fetchedPrinters);
       setIsLoading(false);
     }
     loadData();
@@ -90,7 +85,7 @@ export default function Home() {
   let totalRevenue = 0;
   let totalProfit = 0;
   const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'printing').length;
-  const activePrinters = 2; // Simulação fixa
+  const activePrinters = printers.length; // Usa a quantidade real da API
 
   // Preparando os dados para o Gráfico
   const chartDataMap: Record<string, { name: string, revenue: number, profit: number }> = {};
@@ -132,7 +127,7 @@ export default function Home() {
   }
 
   return (
-    <div className="p-8 flex flex-col gap-8 h-full">
+    <div className="p-6 h-full flex flex-col gap-6 max-w-7xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{dict.title}</h1>
         <p className="text-muted-foreground mt-1">{dict.description}</p>
@@ -162,22 +157,48 @@ export default function Home() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{dict.kpis.pendingOrders}</CardTitle>
+            <CardTitle className="text-sm font-medium">Produção</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingOrders}</div>
-            <p className="text-xs text-muted-foreground">Requerem produção imediata</p>
+            <div className="text-2xl font-bold">{orders.filter(o => ['pending', 'printing', 'finishing'].includes(o.status)).length}</div>
+            <div className="flex flex-col gap-2 mt-3 pt-3 border-t">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1.5" /> Em Espera</div>
+                <span className="font-medium text-slate-700 dark:text-slate-300">{orders.filter(o => o.status === 'pending').length}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
+                <div className="flex items-center"><Play className="w-3.5 h-3.5 mr-1.5" /> Imprimindo</div>
+                <span className="font-bold">{orders.filter(o => o.status === 'printing').length}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-amber-600 dark:text-amber-400">
+                <div className="flex items-center"><CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Acabamento</div>
+                <span className="font-bold">{orders.filter(o => o.status === 'finishing').length}</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{dict.kpis.activePrinters}</CardTitle>
+            <CardTitle className="text-sm font-medium">Impressoras</CardTitle>
             <Printer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activePrinters}</div>
-            <p className="text-xs text-muted-foreground">1 parada para manutenção</p>
+            <div className="text-2xl font-bold">{printers.length}</div>
+            <div className="flex flex-col gap-2 mt-3 pt-3 border-t">
+              <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
+                <div className="flex items-center"><Play className="w-3.5 h-3.5 mr-1.5" /> Imprimindo</div>
+                <span className="font-bold">{printers.filter(p => p.status === 'printing').length}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-green-600 dark:text-green-500">
+                <div className="flex items-center"><CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Livres</div>
+                <span className="font-bold">{printers.filter(p => p.status === 'idle').length}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-red-600 dark:text-red-400">
+                <div className="flex items-center"><Wrench className="w-3.5 h-3.5 mr-1.5" /> Manutenção</div>
+                <span className="font-bold">{printers.filter(p => p.status === 'maintenance').length}</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

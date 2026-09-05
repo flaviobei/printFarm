@@ -75,9 +75,41 @@ CREATE POLICY "Users can manage their own skus" ON public.skus
 CREATE POLICY "Users can manage their own orders" ON public.orders
     FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+-- FASE 9: RBAC e Impressoras
+ALTER TABLE public.user_settings ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'tenant';
+
+CREATE TABLE IF NOT EXISTS public.printers (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  brand TEXT,
+  model TEXT,
+  power_watts NUMERIC DEFAULT 250,
+  status TEXT DEFAULT 'idle',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+ALTER TABLE public.printers ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage their own printers" ON public.printers
+    FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
 -- Políticas para inventory
 CREATE POLICY "Users can manage their own inventory" ON public.inventory
     FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- FASE 10: Expansão de Inventário
+ALTER TABLE public.inventory ADD COLUMN IF NOT EXISTS brand TEXT DEFAULT 'Desconhecida';
+ALTER TABLE public.inventory ADD COLUMN IF NOT EXISTS color_hex TEXT DEFAULT '#cccccc';
+ALTER TABLE public.inventory ADD COLUMN IF NOT EXISTS initial_weight_grams NUMERIC DEFAULT 1000;
+ALTER TABLE public.inventory ADD COLUMN IF NOT EXISTS temp_min NUMERIC DEFAULT 190;
+ALTER TABLE public.inventory ADD COLUMN IF NOT EXISTS temp_max NUMERIC DEFAULT 220;
+ALTER TABLE public.inventory ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'available';
+
+-- FASE 11: Workflow Logístico de Produção
+ALTER TABLE public.printers ADD COLUMN IF NOT EXISTS spool_capacity INTEGER DEFAULT 1;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS printer_id UUID REFERENCES public.printers(id);
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS inventory_id UUID REFERENCES public.inventory(id);
 
 -- ==========================================
 -- 4. TRIGGERS
@@ -97,3 +129,33 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- ==========================================
+-- PHASE 13: LOGS DE CONSUMO E DESPERD�CIO
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS public.material_logs (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
+    inventory_id UUID REFERENCES public.inventory(id) ON DELETE SET NULL,
+    printer_id UUID REFERENCES public.printers(id) ON DELETE SET NULL,
+    weight_used NUMERIC DEFAULT 0,
+    weight_wasted NUMERIC DEFAULT 0,
+    type TEXT NOT NULL, -- 'success' ou 'failure'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+ALTER TABLE public.material_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own material logs" 
+ON public.material_logs FOR SELECT 
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own material logs" 
+ON public.material_logs FOR INSERT 
+WITH CHECK (auth.uid() = user_id);
+
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS inventory_ids JSONB;
+ALTER TABLE public.skus ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE public.skus ADD COLUMN IF NOT EXISTS multicolor_weights JSONB;

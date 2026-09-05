@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ListTodo, Package, Settings, Box, LogOut, CreditCard, Shield } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Package, Settings, Box, LogOut, CreditCard, Printer, Shield, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { useDictionary } from '@/lib/i18n';
+import { api } from '@/services/api';
 import { useEffect, useState } from 'react';
 
 export function Sidebar() {
@@ -13,23 +14,26 @@ export function Sidebar() {
   const { dict, locale, setLocale } = useDictionary();
   const sideDict = dict.sidebar;
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isDevAdminView, setIsDevAdminView] = useState(true);
 
   useEffect(() => {
-    // Recupera a preferência do toggle de dev
-    const storedPref = localStorage.getItem('dev_admin_view');
-    if (storedPref !== null) {
-      setIsDevAdminView(storedPref === 'true');
-    }
-
-    async function checkUser() {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getUser();
-      if (data.user?.email === 'flaviobei@gmail.com' || data.user?.email?.startsWith('admin@')) {
-        setIsAdmin(true);
+    async function checkAdmin() {
+      try {
+        const settings = await api.getUserSettings();
+        if (settings?.role === 'master' || settings?.role === 'admin') {
+          setIsAdmin(true);
+          return;
+        }
+        // Fallback for mock if role is not set yet in DB
+        const supabase = createClient();
+        const { data } = await supabase.auth.getUser();
+        if (data.user?.email === 'flaviobei@gmail.com' || data.user?.email?.startsWith('admin@')) {
+          setIsAdmin(true);
+        }
+      } catch (error) {
+        console.error(error);
       }
     }
-    checkUser();
+    checkAdmin();
   }, []);
 
   // Don't show sidebar on login page
@@ -41,28 +45,16 @@ export function Sidebar() {
     window.location.href = '/login';
   };
 
-  const toggleView = () => {
-    const newVal = !isDevAdminView;
-    setIsDevAdminView(newVal);
-    localStorage.setItem('dev_admin_view', String(newVal));
-    window.location.href = newVal ? '/admin' : '/';
-  };
-
-  let navItems = [
+  const navItems = [
     { name: sideDict.dashboard, href: '/', icon: LayoutDashboard },
     { name: sideDict.productionQueue, href: '/pedidos', icon: ListTodo },
+    { name: 'Histórico', href: '/historico', icon: History },
     { name: sideDict.catalog, href: '/catalogo', icon: Box },
     { name: sideDict.inventory, href: '/estoque', icon: Package },
+    { name: 'Impressoras', href: '/impressoras', icon: Printer },
     { name: sideDict.billing, href: '/assinatura', icon: CreditCard },
     { name: sideDict.settings, href: '/configuracoes', icon: Settings },
   ];
-
-  if (isAdmin && isDevAdminView) {
-    navItems = [
-      { name: (sideDict as any).admin || 'Admin', href: '/admin', icon: Shield },
-      { name: sideDict.settings, href: '/configuracoes', icon: Settings },
-    ];
-  }
 
   return (
     <div className="flex h-full w-64 flex-col bg-card border-r shadow-sm">
@@ -91,41 +83,40 @@ export function Sidebar() {
       </nav>
       
       <div className="p-4 border-t space-y-2">
-        {/* Toggle para Devs */}
-        {isAdmin && (
-          <button
-            onClick={toggleView}
-            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-xs font-bold text-amber-600 bg-amber-100 hover:bg-amber-200 transition-colors"
-          >
-            <Shield className="h-4 w-4" />
-            {isDevAdminView ? 'Ver como Usuário' : 'Ver como Admin'}
-          </button>
-        )}
-
         <div className="flex items-center justify-between px-3 pt-2">
           <span className="text-xs font-medium text-muted-foreground">Idioma / Lang</span>
           <div className="flex space-x-1">
             <button 
               onClick={() => setLocale('pt')}
-              className={cn("text-xs font-bold px-2 py-1 rounded transition-colors", locale === 'pt' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted')}
+              className={cn("px-2 py-1 text-xs rounded", locale === 'pt' ? "bg-primary text-primary-foreground" : "bg-muted")}
             >
               PT
             </button>
             <button 
               onClick={() => setLocale('en')}
-              className={cn("text-xs font-bold px-2 py-1 rounded transition-colors", locale === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted')}
+              className={cn("px-2 py-1 text-xs rounded", locale === 'en' ? "bg-primary text-primary-foreground" : "bg-muted")}
             >
               EN
             </button>
           </div>
         </div>
-        
-        <button 
+
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 transition-colors mt-2"
+          >
+            <Shield className="h-4 w-4" />
+            Super Admin
+          </Link>
+        )}
+
+        <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors mt-2"
         >
           <LogOut className="h-4 w-4" />
-          Sair / Logout
+          {sideDict.logout}
         </button>
       </div>
     </div>

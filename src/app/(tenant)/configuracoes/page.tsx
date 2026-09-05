@@ -61,8 +61,8 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <div className="p-8 h-full flex flex-col max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-6 h-full flex flex-col max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{setDict.title}</h1>
           <p className="text-muted-foreground mt-1">{setDict.description}</p>

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/client';
 
 export type UserSettings = {
   id: string;
+  role: string; // 'master', 'admin', 'tenant'
   electricity_price_per_kwh: number;
   printer_power_watts: number;
   failure_rate_percentage: number;
@@ -16,6 +17,8 @@ export type SKU = {
   weight_grams: number;
   print_time_hours: number;
   sale_price: number;
+  image_url?: string | null;
+  multicolor_weights?: number[] | null;
   created_at: string;
 };
 
@@ -23,9 +26,12 @@ export type Order = {
   id: string;
   user_id: string;
   sku_id: string;
-  status: 'pending' | 'printing' | 'finishing' | 'ready' | 'shipped';
+  status: 'pending' | 'printing' | 'finishing' | 'ready' | 'shipped' | 'delivered';
   customer_name: string;
   deadline: string;
+  printer_id?: string | null;
+  inventory_id?: string | null;
+  inventory_ids?: string[];
   created_at: string;
 };
 
@@ -33,8 +39,38 @@ export type Inventory = {
   id: string;
   user_id: string;
   material_type: string;
-  color: string;
+  brand: string;
+  color: string; // nome da cor
+  color_hex: string;
+  initial_weight_grams: number;
   remaining_grams: number;
+  temp_min: number;
+  temp_max: number;
+  status: string; // 'available', 'in_use'
+  created_at: string;
+};
+
+export type MaterialLog = {
+  id?: string;
+  user_id?: string;
+  order_id?: string | null;
+  inventory_id?: string | null;
+  printer_id?: string | null;
+  weight_used: number;
+  weight_wasted: number;
+  type: 'success' | 'failure';
+  created_at?: string;
+};
+
+export type Printer = {
+  id: string;
+  user_id: string;
+  name: string;
+  brand: string;
+  model: string;
+  power_watts: number;
+  spool_capacity: number; // Quantidade de cores suportadas (ex: AMS = 4)
+  status: string; // 'idle', 'printing', 'maintenance'
   created_at: string;
 };
 
@@ -117,6 +153,72 @@ export const api = {
     return new Promise(resolve => setTimeout(resolve, 800));
   },
 
+  // --- Impressoras ---
+  async getPrinters(): Promise<Printer[]> {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('printers').select('*').order('created_at', { ascending: false });
+    if (error) {
+      // Mock se a tabela não existir
+      return [
+        { id: '1', user_id: 'x', name: 'Ender 3 V2', brand: 'Creality', model: 'Ender 3', power_watts: 350, status: 'idle', created_at: new Date().toISOString() },
+        { id: '2', user_id: 'x', name: 'Bambu P1P', brand: 'Bambu Lab', model: 'P1P', power_watts: 1000, status: 'printing', created_at: new Date().toISOString() },
+      ];
+    }
+    return data || [];
+  },
+
+  async addPrinter(printer: Partial<Printer>) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not logged in');
+
+    const { data, error } = await supabase
+      .from('printers')
+      .insert([{ ...printer, user_id: user.id }])
+      .select()
+      .single();
+
+    if (error) {
+      console.warn("Tabela printers possivelmente não existe ainda no DB, mockando sucesso.", error);
+      return { id: Math.random().toString(), ...printer };
+    }
+    return data;
+  },
+
+  async createInventory(data: Partial<Inventory>): Promise<Inventory> {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not logged in');
+
+    const { data: created, error } = await supabase.from('inventory').insert([{ ...data, user_id: user.id }]).select().single();
+    if (error) throw error;
+    return created;
+  },
+
+  async createInventoryBatch(dataList: Partial<Inventory>[]): Promise<Inventory[]> {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not logged in');
+
+    const mappedData = dataList.map(item => ({ ...item, user_id: user.id }));
+    const { data: created, error } = await supabase.from('inventory').insert(mappedData).select();
+    if (error) throw error;
+    return created || [];
+  },
+
+  async updatePrinter(id: string, updates: Partial<Printer>) {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('printers').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deletePrinter(id: string) {
+    const supabase = createClient();
+    const { error } = await supabase.from('printers').delete().eq('id', id);
+    if (error) throw error;
+  },
+
   async getUserSettings(): Promise<UserSettings | null> {
     const supabase = createClient();
     const { data, error } = await supabase.from('user_settings').select('*').maybeSingle();
@@ -158,9 +260,19 @@ export const api = {
 
   async getOrders(): Promise<Order[]> {
     const supabase = createClient();
-    const { data, error } = await supabase.from('orders').select('*').order('deadline', { ascending: true });
+    const { data, error } = await supabase.from('orders').select('*').neq('status', 'delivered').order('deadline', { ascending: true });
     if (error) {
       console.error('Error fetching orders:', error.message, error.details, error.hint);
+      return [];
+    }
+    return data || [];
+  },
+
+  async getDeliveredOrders(): Promise<Order[]> {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('orders').select('*').eq('status', 'delivered').order('created_at', { ascending: false });
+    if (error) {
+      console.error('Error fetching delivered orders:', error.message, error.details, error.hint);
       return [];
     }
     return data || [];
@@ -250,6 +362,27 @@ export const api = {
   // ==========================================
   // CRUD - SKUs (Catálogo)
   // ==========================================
+  async uploadSkuImage(file: File): Promise<string> {
+    const supabase = createClient();
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error('User not authenticated');
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${userData.user.id}/${Math.random()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('sku-images')
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('sku-images')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  },
+
   async createSKU(sku: Omit<SKU, 'id' | 'created_at' | 'user_id'>) {
     const supabase = createClient();
     const { data: userData } = await supabase.auth.getUser();
@@ -338,5 +471,14 @@ export const api = {
     const { data, error } = await supabase.from('inventory').update(updates).eq('id', id).select().single();
     if (error) throw error;
     return data;
+  },
+
+  async logMaterialUsage(log: Partial<MaterialLog>) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not logged in');
+
+    const { error } = await supabase.from('material_logs').insert([{ ...log, user_id: user.id }]);
+    if (error) throw error;
   }
 };

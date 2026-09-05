@@ -56,7 +56,7 @@ export default function AssinaturaPage() {
   const currentPlanId = 'plan_free';
 
   return (
-    <div className="p-8 h-full flex flex-col max-w-7xl mx-auto overflow-y-auto">
+    <div className="p-6 h-full flex flex-col max-w-7xl mx-auto overflow-y-auto">
       <div className="text-center mb-12 mt-4">
         <h1 className="text-4xl font-extrabold tracking-tight mb-3">{billDict.title}</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{billDict.description}</p>

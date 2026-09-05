@@ -5,6 +5,8 @@
     "productionQueue": "Fila de Produção",
     "catalog": "Catálogo de SKUs",
     "inventory": "Estoque",
+    "printers": "Impressoras",
+    "history": "Histórico",
     "settings": "Configurações",
     "billing": "Assinaturas",
     "admin": "Super Admin",
@@ -36,8 +38,47 @@
       "shipped": "Enviado"
     },
     "cards": {
-      "deadline": "Prazo:"
-    }
+      "deadline": "Prazo:",
+      "customer": "Cliente"
+    },
+    "setup": {
+      "title": "Iniciar Produção",
+      "materialNeeded": "Material Necessário",
+      "allocatePrinter": "Alocar Impressora",
+      "allocateFilaments": "Alocar Filamentos (Estoque)",
+      "selectPrinter": "Selecione uma impressora livre...",
+      "noPrintersAvailable": "Nenhuma impressora livre no momento!",
+      "slotPosition": "Posição",
+      "noAutoDeduction": "Nenhum (Não dar baixa automática)",
+      "multicolorTip": "Aconselhado para rastreio exato de consumo multi-color.",
+      "startPrint": "Iniciar Impressão",
+      "starting": "Iniciando..."
+    },
+    "completion": {
+      "title": "Baixa de Produção",
+      "printFinished": "Impressão Finalizada",
+      "printFinishedDesc": "A impressora será liberada para o próximo pedido. Confirme os gastos para atualizar o estoque.",
+      "weightUsed": "Peso Gasto (g)",
+      "wasteWeight": "Desperdício (g)",
+      "weightUsedFull": "Peso Gasto na Peça (g)",
+      "wasteWeightFull": "Desperdício / Limpeza (g)",
+      "confirmRelease": "Confirmar e Liberar",
+      "processing": "Processando..."
+    },
+    "failure": {
+      "title": "Falha de Produção (Abortar)",
+      "printAborted": "Impressão Abortada",
+      "printAbortedDesc": "O pedido retornará para Aguardando Produção. Informe quanto material foi perdido (espaguete, base) para dar baixa no estoque.",
+      "failureWaste": "Desperdício da Falha (g)",
+      "registerAbort": "Registrar Perda e Abortar",
+      "registering": "Registrando..."
+    },
+    "delivery": {
+      "confirmDelivery": "Confirmar Entrega"
+    },
+    "loading": "Carregando fila...",
+    "selectSku": "Selecione um produto do catálogo...",
+    "statusLabel": "Status Atual"
   },
   "catalogo": {
     "title": "Catálogo de SKUs",
@@ -50,6 +91,45 @@
       "netProfit": "Lucro Líquido",
       "margin": "Margem",
       "actions": "Ações"
+    },
+    "export": "Exportar",
+    "import": "Importar",
+    "noProducts": "Nenhum produto cadastrado no momento.",
+    "productPhoto": "Foto do Produto",
+    "changeImage": "Trocar Imagem",
+    "uploadImage": "Enviar Imagem",
+    "multicolor": "Peça Multi-Colorida",
+    "multicolorTip": "Informe o peso estimado de cada cor. O peso total será calculado automaticamente.",
+    "addColor": "Adicionar Cor",
+    "colorLabel": "Cor",
+    "totalLabel": "Total",
+    "saving": "Salvando...",
+    "loading": "Carregando catálogo..."
+  },
+  "impressoras": {
+    "title": "Gerenciar Impressoras",
+    "description": "Controle o seu parque de máquinas de impressão 3D.",
+    "newPrinter": "Nova Impressora",
+    "noPrinters": "Nenhuma impressora cadastrada ainda.",
+    "loading": "Carregando impressoras...",
+    "form": {
+      "nickname": "Apelido (Nome)",
+      "brand": "Marca",
+      "model": "Modelo",
+      "watts": "Watts Médio",
+      "spoolCapacity": "Cores Simultâneas",
+      "spoolCapacityTooltip": "Suporte a múltiplas cores (AMS, MMU)",
+      "currentStatus": "Status Atual"
+    },
+    "status": {
+      "idle": "Livre / Parada",
+      "printing": "Em Produção",
+      "maintenance": "Em Manutenção"
+    },
+    "statusLabel": {
+      "idle": "Livre",
+      "printing": "Imprimindo",
+      "maintenance": "Manutenção"
     }
   },
   "estoque": {
@@ -66,7 +146,34 @@
       "ok": "Normal",
       "low": "Baixo",
       "critical": "Crítico"
+    },
+    "form": {
+      "usageStatus": "Status de Uso",
+      "available": "Disponível no Estoque",
+      "inUse": "Em Uso (Checkout)"
+    },
+    "batch": {
+      "intro": "Você está dando entrada no material:",
+      "sealedWeight": "Peso Lacrado Padrão",
+      "howManySpools": "Quantos rolos idênticos acabaram de chegar?",
+      "instanceTip": "Serão criadas instâncias independentes para rastreio exato."
     }
+  },
+  "historico": {
+    "title": "Histórico de Pedidos",
+    "description": "Consulte o histórico completo de pedidos entregues.",
+    "table": {
+      "orderId": "ID Pedido",
+      "customer": "Cliente",
+      "product": "Produto (SKU)",
+      "createdAt": "Data de Criação",
+      "finalStatus": "Status Final"
+    },
+    "loading": "Carregando histórico...",
+    "noOrders": "Nenhum pedido entregue ainda",
+    "noOrdersTip": "Os pedidos aparecerão aqui quando forem finalizados no Kanban.",
+    "delivered": "Entregue",
+    "search": "Buscar por cliente ou produto..."
   },
   "settings": {
     "title": "Configurações da Máquina",
@@ -115,7 +222,10 @@
     "save": "Salvar",
     "delete": "Deletar",
     "edit": "Editar",
-    "deleteConfirm": "Tem certeza que deseja deletar este item?"
+    "deleteConfirm": "Tem certeza que deseja deletar este item?",
+    "loading": "Carregando...",
+    "product": "Produto",
+    "colors": "cores"
   },
   "billing": {
     "title": "Planos e Assinatura",
@@ -145,5 +255,28 @@
       "feat_dedicated_manager": "Gerente de Conta Dedicado",
       "feat_sla": "SLA de 99.9% Uptime"
     }
+  },
+  "toast": {
+    "productionStarted": "Produção Iniciada!",
+    "productionCompleted": "Produção concluída e estoque atualizado!",
+    "productionError": "Erro ao iniciar produção.",
+    "completionError": "Erro ao dar baixa na produção.",
+    "printAborted": "Impressão abortada. Perdas registradas e rolo(s) liberado(s).",
+    "abortError": "Erro ao abortar impressão.",
+    "orderMoved": "Pedido movido!",
+    "orderMoveError": "Falha ao mover pedido.",
+    "orderRemoved": "Pedido removido!",
+    "orderRemoveError": "Erro ao deletar pedido.",
+    "printerRemoved": "Impressora removida com sucesso!",
+    "printerRemoveError": "Erro ao remover impressora.",
+    "printerUpdated": "Impressora atualizada!",
+    "printerAdded": "Impressora cadastrada!",
+    "printerSaveError": "Erro ao salvar impressora.",
+    "skuSaveError": "Erro ao salvar produto.",
+    "skuDeleteError": "Erro ao deletar produto. Ele pode estar atrelado a um pedido existente.",
+    "imageUploadError": "Erro ao fazer upload da imagem.",
+    "exportSuccess": "SKUs exportados com sucesso!",
+    "importComplete": "Importação concluída",
+    "importEmpty": "Arquivo CSV vazio ou sem dados."
   }
 }
