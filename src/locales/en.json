@@ -16,7 +16,8 @@
     "logout": "Logout",
     "suppliers": "Suppliers",
     "customers": "Customers",
-    "finance": "Finance"
+    "finance": "Finance",
+    "supplies": "Supplies"
   },
   "home": {
     "title": "General Dashboard",

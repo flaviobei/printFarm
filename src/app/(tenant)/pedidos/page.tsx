@@ -795,8 +795,8 @@ export default function PedidosPage() {
                       onChange={() => setSelectedQuote(q)}
                     />
                     <div className="flex-1">
-                      <div className="font-bold text-sm">{q.company} - {q.serviceName}</div>
-                      <div className="text-xs text-muted-foreground">{q.estimatedDays} dias úteis</div>
+                      <div className="font-bold text-sm">{q.serviceName}</div>
+                      <div className="text-xs text-muted-foreground">{q.deliveryDays} dias úteis</div>
                     </div>
                     <div className="font-bold text-sm">
                       R$ {q.price.toFixed(2)}

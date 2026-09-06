@@ -202,8 +202,8 @@ export default function EstoquePage() {
       temp_max: Number(formData.get('temp_max')),
       status: formData.get('status') as string,
       cost: Number(formData.get('cost')) || 0,
-      supplier_id: (formData.get('supplier_id') as string) || null,
-      invoice_number: (formData.get('invoice_number') as string) || null,
+      supplier_id: (formData.get('supplier_id') as string) || undefined,
+      invoice_number: (formData.get('invoice_number') as string) || undefined,
       entry_date: (formData.get('entry_date') as string) || undefined,
     };
 
@@ -239,8 +239,8 @@ export default function EstoquePage() {
     }
 
     const cost = Number(formData.get('cost')) || 0;
-    const supplier_id = (formData.get('supplier_id') as string) || null;
-    const invoice_number = (formData.get('invoice_number') as string) || null;
+    const supplier_id = (formData.get('supplier_id') as string) || undefined;
+    const invoice_number = (formData.get('invoice_number') as string) || undefined;
     const entry_date = (formData.get('entry_date') as string) || undefined;
 
     const newItems: Partial<Inventory>[] = Array.from({ length: quantity }).map(() => ({
@@ -266,7 +266,7 @@ export default function EstoquePage() {
       toast.success(`${quantity} ${dict?.toast?.batchAdded || 'rolo(s) adicionado(s) com sucesso!'}`);
     } catch (error: any) {
       console.error('Batch save error:', error);
-      toast.error(`${dict?.toast?.batchSaveError || 'Erro ao adicionar lote'}: ${error?.message || 'Desconhecido'}`);
+      toast.error(`${dict?.toast?.batchError || 'Erro ao adicionar lote'}: ${error?.message || 'Desconhecido'}`);
     } finally {
       setIsSubmitting(false);
     }

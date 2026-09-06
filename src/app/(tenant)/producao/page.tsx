@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDictionary } from '@/lib/i18n';
-import { api, PrintJob, SKU, Printer, Inventory, OrderItem, Order } from '@/services/api';
+import { api, PrintJob, SKU, Printer, Inventory, OrderItem, Order, Supply, FinishedGood } from '@/services/api';
 import { Clock, Printer as PrinterIcon, Package, CheckCircle, Plus, Trash2, Edit2, AlertTriangle, ImageIcon, Scissors, Wrench, Play, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Modal } from '@/components/ui/modal';
@@ -161,7 +161,7 @@ function DraggableJobCard({
           {relatedItem && (
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground flex items-center">
               Pedido
-              {isMarketplace && <Store className="w-3 h-3 ml-1 text-violet-600" title={relatedOrder?.marketplace_source} />}
+              {isMarketplace && <span title={relatedOrder?.marketplace_source || undefined}><Store className="w-3 h-3 ml-1 text-violet-600" /></span>}
             </span>
           )}
           <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
