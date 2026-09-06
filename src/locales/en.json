@@ -2,6 +2,9 @@
   "sidebar": {
     "title": "printFarm",
     "dashboard": "Dashboard",
+    "orders": "Orders",
+    "production": "Production",
+    "finishedGoods": "Finished Goods",
     "productionQueue": "Production Queue",
     "catalog": "SKU Catalog",
     "inventory": "Inventory",
@@ -11,7 +14,9 @@
     "billing": "Billing",
     "admin": "Super Admin",
     "logout": "Logout",
-    "suppliers": "Suppliers"
+    "suppliers": "Suppliers",
+    "customers": "Customers",
+    "finance": "Finance"
   },
   "home": {
     "title": "General Dashboard",
@@ -50,18 +55,63 @@
     "loading": "Loading data..."
   },
   "pedidos": {
-    "title": "Production Queue",
-    "description": "Track and manage your production queue.",
+    "title": "Sales Orders",
+    "description": "Manage customer orders and track each sale.",
     "columns": {
-      "pending": "Awaiting Production",
-      "printing": "Printing",
-      "finishing": "Finishing",
+      "pending": "Pending",
+      "production": "In Production",
       "ready": "Ready to Ship",
       "shipped": "Shipped"
     },
     "cards": {
       "deadline": "Deadline:",
-      "customer": "Customer"
+      "customer": "Customer",
+      "items": "Items",
+      "progress": "Progress",
+      "fromStock": "from stock",
+      "needsPrinting": "needs printing"
+    },
+    "newOrder": {
+      "title": "New Order",
+      "addItem": "Add Item",
+      "selectSku": "Select a product...",
+      "quantity": "Qty",
+      "unitPrice": "Unit Price",
+      "inStock": "in stock",
+      "willUseStock": "Will use from stock",
+      "willPrint": "Will generate print job"
+    },
+    "delivery": {
+      "confirmDelivery": "Confirm Delivery"
+    },
+    "loading": "Loading orders...",
+    "emptyColumn": "Empty",
+    "blocked": "Awaiting prints",
+    "allReady": "All pieces ready!"
+  },
+  "producao": {
+    "title": "Print Queue",
+    "description": "Manage print jobs, allocate printers, and track finishing.",
+    "columns": {
+      "queued": "Queued",
+      "printing": "Printing",
+      "finishing": "Finishing",
+      "finished": "Finished"
+    },
+    "cards": {
+      "pieces": "pieces",
+      "standalone": "Standalone",
+      "orderRef": "Order",
+      "finishingNotes": "Finishing notes"
+    },
+    "actions": {
+      "newPrint": "New Print Job",
+      "split": "Split",
+      "splitTitle": "Split Job",
+      "splitDesc": "Separate some pieces to another printer.",
+      "splitQty": "Quantity to separate",
+      "splitConfirm": "Split",
+      "completeFinishing": "Complete Finishing"
     },
     "setup": {
       "title": "Start Production",
@@ -69,17 +119,17 @@
       "allocatePrinter": "Allocate Printer",
       "allocateFilaments": "Allocate Filaments (Inventory)",
       "selectPrinter": "Select an available printer...",
-      "noPrintersAvailable": "No printers available at the moment!",
+      "noPrintersAvailable": "No printers available!",
       "slotPosition": "Slot",
-      "noAutoDeduction": "None (No automatic deduction)",
-      "multicolorTip": "Recommended for accurate multi-color consumption tracking.",
+      "noAutoDeduction": "None (No auto deduction)",
+      "multicolorTip": "Recommended for multi-color tracking.",
       "startPrint": "Start Printing",
       "starting": "Starting..."
     },
     "completion": {
       "title": "Production Sign-Off",
       "printFinished": "Print Finished",
-      "printFinishedDesc": "The printer will be released for the next order. Confirm the consumption to update inventory.",
+      "printFinishedDesc": "Printer will be released. Confirm consumption to update inventory.",
       "weightUsed": "Weight Used (g)",
       "wasteWeight": "Waste (g)",
       "weightUsedFull": "Weight Used on Part (g)",
@@ -90,20 +140,33 @@
     "failure": {
       "title": "Production Failure (Abort)",
       "printAborted": "Print Aborted",
-      "printAbortedDesc": "The order will return to Awaiting Production. Report how much material was wasted (spaghetti, base) to deduct from inventory.",
+      "printAbortedDesc": "Job will return to queue. Report wasted material.",
       "failureWaste": "Failure Waste (g)",
       "registerAbort": "Register Loss & Abort",
       "registering": "Registering..."
     },
-    "delivery": {
-      "confirmDelivery": "Confirm Delivery"
+    "loading": "Loading jobs...",
+    "emptyColumn": "Empty"
+  },
+  "pecas": {
+    "title": "Finished Goods",
+    "description": "Inventory of printed and finished pieces, ready for immediate sale.",
+    "kpis": {
+      "totalPieces": "Total Pieces",
+      "totalSkus": "SKUs in Stock",
+      "estimatedValue": "Estimated Value"
     },
-    "loading": "Loading queue...",
-    "selectSku": "Select a product from the catalog...",
-    "statusLabel": "Current Status",
-    "emptyColumn": "Empty",
-    "unknown": "Unknown",
-    "removedProduct": "Product Removed"
+    "table": {
+      "product": "Product",
+      "quantity": "Quantity",
+      "value": "Value",
+      "origin": "Origin",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "adjust": "Adjust Quantity",
+    "addManual": "Manual Entry",
+    "noStock": "No pieces in stock at the moment."
   },
   "catalogo": {
     "title": "SKU Catalog",
@@ -432,5 +495,92 @@
       "deleted": "Supplier removed.",
       "error": "Error saving supplier."
     }
+  },
+  "finance": {
+    "title": "Financial Manager",
+    "subtitle": "Track and log incomes and expenses to calculate your net profit.",
+    "kpis": {
+      "totalIncome": "Total Income",
+      "totalIncomeDesc": "Completed sales and revenues.",
+      "totalExpense": "Total Expenses",
+      "totalExpenseDesc": "Material costs and expenses.",
+      "netBalance": "Net Balance",
+      "netBalanceDesc": "Real profit for the period."
+    },
+    "table": {
+      "date": "Date",
+      "description": "Description",
+      "category": "Category",
+      "type": "Type",
+      "amount": "Amount ($)",
+      "actions": "Actions"
+    },
+    "filters": {
+      "all": "All",
+      "income": "Income Only",
+      "expense": "Expenses Only"
+    },
+    "types": {
+      "income": "Income",
+      "expense": "Expense"
+    },
+    "addTransaction": "New Transaction",
+    "noTransactionsTitle": "No transactions found",
+    "noTransactionsDesc": "Your sales and purchases will appear here. Add manual entries if needed.",
+    "form": {
+      "type": "Transaction Type",
+      "amount": "Amount ($)",
+      "date": "Date",
+      "category": "Category (E.g. Maintenance, Bills)",
+      "description": "Description (E.g. Changed nozzle)"
+    },
+    "toast": {
+      "saved": "Transaction saved successfully!",
+      "deleted": "Transaction deleted successfully!",
+      "error": "Error processing transaction."
+    }
+  },
+  "customers": {
+    "title": "Customers",
+    "subtitle": "Manage your buyer base and order history.",
+    "addCustomer": "New Customer",
+    "kpis": {
+      "total": "Total Customers",
+      "marketplace": "From Marketplaces",
+      "direct": "Direct Sales"
+    },
+    "table": {
+      "name": "Name / Contact",
+      "location": "Location",
+      "source": "Source",
+      "orders": "Orders",
+      "actions": "Actions"
+    },
+    "form": {
+      "name": "Full Name",
+      "email": "Email",
+      "phone": "Phone / WhatsApp",
+      "address": "Address",
+      "city": "City",
+      "state": "State",
+      "zip": "ZIP Code"
+    },
+    "toast": {
+      "saved": "Customer saved!",
+      "deleted": "Customer removed.",
+      "error": "Error saving customer."
+    }
+  },
+  "integrations": {
+    "title": "Integrations & Modules",
+    "desc": "Enable or disable connections with Marketplaces and Logistics services.",
+    "marketplaces": "Active Marketplaces",
+    "logistics": "Logistics (Carriers)",
+    "simulate": "Simulate External Sale (Mock)",
+    "shippingModalTitle": "Generate Shipping",
+    "shippingModalDesc": "Choose how the order will be shipped. This will calculate freight and generate tracking.",
+    "shippingService": "Shipping Service",
+    "generateLabel": "Generate Label & Ship",
+    "printLabel": "Print Label"
   }
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDictionary } from '@/lib/i18n';
-import { api, Order, SKU, UserSettings } from '@/services/api';
+import { api, Order, OrderItem, SKU, UserSettings } from '@/services/api';
 import { calculatePrintCost, CostParameters } from '@/services/cost-calculator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
@@ -21,6 +21,7 @@ export default function Home() {
   const [printers, setPrinters] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSeeding, setIsSeeding] = useState(false);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -29,16 +30,18 @@ export default function Home() {
       const supabase = createClient();
       const { data: userData } = await supabase.auth.getUser();
 
-      const [fetchedOrders, fetchedSkus, fetchedSettings, fetchedPrinters] = await Promise.all([
+      const [fetchedOrders, fetchedSkus, fetchedSettings, fetchedPrinters, fetchedItems] = await Promise.all([
         api.getOrders(),
         api.getSKUs(),
         api.getUserSettings(),
-        api.getPrinters()
+        api.getPrinters(),
+        api.getAllOrderItems()
       ]);
       setOrders(fetchedOrders);
       setSkus(fetchedSkus);
       setSettings(fetchedSettings);
       setPrinters(fetchedPrinters);
+      setOrderItems(fetchedItems);
       setIsLoading(false);
     }
     loadData();
@@ -86,37 +89,40 @@ export default function Home() {
   // KPIs Calculation
   let totalRevenue = 0;
   let totalProfit = 0;
-  const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'printing').length;
+  const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'production').length;
   const activePrinters = printers.length; // Usa a quantidade real da API
 
   // Preparando os dados para o Gráfico
   const chartDataMap: Record<string, { name: string, revenue: number, profit: number }> = {};
 
   orders.forEach(order => {
-    const sku = skus.find(s => s.id === order.sku_id);
-    if (sku) {
-      const params: CostParameters = {
-        filamentPricePerKg: 120.00, // Custo do rolo será dinâmico depois
-        printerPowerWatts: Number(safeSettings.printer_power_watts),
-        electricityPricePerKwh: Number(safeSettings.electricity_price_per_kwh),
-        failureRatePercentage: Number(safeSettings.failure_rate_percentage),
-        packagingCost: 2.50,
-        shippingCost: 0,
-        marketplaceFeePercentage: Number(safeSettings.marketplace_fee_percentage),
-        filamentWeightGrams: Number(sku.weight_grams),
-        printTimeHours: Number(sku.print_time_hours),
-        salePrice: Number(sku.sale_price),
-      };
-      const result = calculatePrintCost(params);
-      
-      totalRevenue += Number(sku.sale_price);
-      totalProfit += result.netProfit;
+    const items = orderItems.filter(oi => oi.order_id === order.id);
+    for (const item of items) {
+      const sku = skus.find(s => s.id === item.sku_id);
+      if (sku) {
+        const params: CostParameters = {
+          filamentPricePerKg: 120.00,
+          printerPowerWatts: Number(safeSettings.printer_power_watts),
+          electricityPricePerKwh: Number(safeSettings.electricity_price_per_kwh),
+          failureRatePercentage: Number(safeSettings.failure_rate_percentage),
+          packagingCost: 2.50,
+          shippingCost: 0,
+          marketplaceFeePercentage: Number(safeSettings.marketplace_fee_percentage),
+          filamentWeightGrams: Number(sku.weight_grams),
+          printTimeHours: Number(sku.print_time_hours),
+          salePrice: Number(sku.sale_price),
+        };
+        const result = calculatePrintCost(params);
+        const qty = item.quantity;
+        totalRevenue += Number(sku.sale_price) * qty;
+        totalProfit += result.netProfit * qty;
 
-      if (!chartDataMap[sku.id]) {
-        chartDataMap[sku.id] = { name: sku.name, revenue: 0, profit: 0 };
+        if (!chartDataMap[sku.id]) {
+          chartDataMap[sku.id] = { name: sku.name, revenue: 0, profit: 0 };
+        }
+        chartDataMap[sku.id].revenue += Number(sku.sale_price) * qty;
+        chartDataMap[sku.id].profit += result.netProfit * qty;
       }
-      chartDataMap[sku.id].revenue += Number(sku.sale_price);
-      chartDataMap[sku.id].profit += result.netProfit;
     }
   });
 
@@ -164,7 +170,7 @@ export default function Home() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{orders.filter(o => ['pending', 'printing', 'finishing'].includes(o.status)).length}</div>
+            <div className="text-2xl font-bold">{orders.filter(o => ['pending', 'production'].includes(o.status)).length}</div>
             <div className="flex flex-col gap-2 mt-3 pt-3 border-t">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <div className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1.5" /> {dict.production.waiting}</div>
@@ -172,11 +178,7 @@ export default function Home() {
               </div>
               <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
                 <div className="flex items-center"><Play className="w-3.5 h-3.5 mr-1.5" /> {dict.production.printing}</div>
-                <span className="font-bold">{orders.filter(o => o.status === 'printing').length}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs text-amber-600 dark:text-amber-400">
-                <div className="flex items-center"><CheckCircle className="w-3.5 h-3.5 mr-1.5" /> {dict.production.finishing}</div>
-                <span className="font-bold">{orders.filter(o => o.status === 'finishing').length}</span>
+                <span className="font-bold">{orders.filter(o => o.status === 'production').length}</span>
               </div>
             </div>
           </CardContent>

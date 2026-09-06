@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ListTodo, Package, Settings, Box, LogOut, CreditCard, Printer, Shield, History, Truck } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Package, Settings, Box, LogOut, CreditCard, Printer, Shield, History, Truck, CircleDollarSign, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { useDictionary } from '@/lib/i18n';
@@ -47,11 +47,16 @@ export function Sidebar() {
 
   const navItems = [
     { name: sideDict.dashboard, href: '/', icon: LayoutDashboard },
-    { name: sideDict.productionQueue, href: '/pedidos', icon: ListTodo },
-    { name: 'Histórico', href: '/historico', icon: History },
+    { name: sideDict.orders || 'Pedidos', href: '/pedidos', icon: ListTodo },
+    { name: sideDict.production || 'Produção', href: '/producao', icon: Printer },
+    { name: sideDict.finishedGoods || 'Peças Prontas', href: '/pecas', icon: Package },
+    { name: sideDict.history, href: '/historico', icon: History },
     { name: sideDict.catalog, href: '/catalogo', icon: Box },
     { name: sideDict.inventory, href: '/estoque', icon: Package },
+    { name: sideDict.supplies || 'Insumos', href: '/insumos', icon: Package },
+    { name: sideDict.customers || 'Clientes', href: '/clientes', icon: Users },
     { name: sideDict.suppliers || 'Fornecedores', href: '/fornecedores', icon: Truck },
+    { name: sideDict.finance || 'Financeiro', href: '/financeiro', icon: CircleDollarSign },
     { name: 'Impressoras', href: '/impressoras', icon: Printer },
     { name: sideDict.billing, href: '/assinatura', icon: CreditCard },
     { name: sideDict.settings, href: '/configuracoes', icon: Settings },

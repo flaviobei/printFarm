@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { api, Order, SKU } from '@/services/api';
+import { api, Order, OrderItem, SKU } from '@/services/api';
 import { History, Search, Box, Calendar, User, PackageCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDictionary } from '@/lib/i18n';
@@ -13,6 +13,7 @@ export default function HistoricoPage() {
   const histDict = dict.historico;
   const [orders, setOrders] = useState<Order[]>([]);
   const [skus, setSkus] = useState<SKU[]>([]);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
 
@@ -23,12 +24,14 @@ export default function HistoricoPage() {
   async function loadData() {
     setIsLoading(true);
     try {
-      const [fetchedOrders, fetchedSkus] = await Promise.all([
+      const [fetchedOrders, fetchedSkus, fetchedItems] = await Promise.all([
         api.getDeliveredOrders(),
         api.getSKUs(),
+        api.getAllOrderItems(),
       ]);
       setOrders(fetchedOrders);
       setSkus(fetchedSkus);
+      setOrderItems(fetchedItems);
     } catch (error) {
       console.error(error);
     } finally {
@@ -37,12 +40,13 @@ export default function HistoricoPage() {
   }
 
   const filteredOrders = orders.filter(order => {
-    const sku = skus.find(s => s.id === order.sku_id);
+    const items = orderItems.filter(oi => oi.order_id === order.id);
+    const skuNames = items.map(i => skus.find(s => s.id === i.sku_id)?.name || '').join(' ');
     const searchLower = search.toLowerCase();
     return (
-      order.customer_name.toLowerCase().includes(searchLower) ||
+      (order.customer_name || '').toLowerCase().includes(searchLower) ||
       order.id.toLowerCase().includes(searchLower) ||
-      (sku?.name || '').toLowerCase().includes(searchLower)
+      skuNames.toLowerCase().includes(searchLower)
     );
   });
 
@@ -108,7 +112,11 @@ export default function HistoricoPage() {
                 </tr>
               ) : (
                 filteredOrders.map((order) => {
-                  const sku = skus.find(s => s.id === order.sku_id);
+                  const items = orderItems.filter(oi => oi.order_id === order.id);
+                  const productNames = items.map(i => {
+                    const sku = skus.find(s => s.id === i.sku_id);
+                    return `${sku?.name || 'Removido'} x${i.quantity}`;
+                  }).join(', ');
                   return (
                     <tr key={order.id} className="border-b hover:bg-muted/30 transition-colors">
                       <td className="px-6 py-4 font-mono text-xs text-slate-500">
@@ -123,7 +131,7 @@ export default function HistoricoPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center text-slate-700">
                           <Box className="w-4 h-4 mr-2 text-slate-400" />
-                          {sku?.name || histDict?.unknown || 'Desconhecido'}
+                          {productNames || histDict?.unknown || 'Desconhecido'}
                         </div>
                       </td>
                       <td className="px-6 py-4">

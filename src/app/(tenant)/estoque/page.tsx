@@ -201,10 +201,10 @@ export default function EstoquePage() {
       temp_min: Number(formData.get('temp_min')),
       temp_max: Number(formData.get('temp_max')),
       status: formData.get('status') as string,
-      cost: Number(formData.get('cost')),
+      cost: Number(formData.get('cost')) || 0,
       supplier_id: (formData.get('supplier_id') as string) || null,
-      invoice_number: formData.get('invoice_number') as string,
-      entry_date: formData.get('entry_date') as string,
+      invoice_number: (formData.get('invoice_number') as string) || null,
+      entry_date: (formData.get('entry_date') as string) || undefined,
     };
 
     try {
@@ -216,8 +216,9 @@ export default function EstoquePage() {
       await loadData();
       setIsModalOpen(false);
       toast.success(dict?.toast?.rollSaved || 'Carretel salvo com sucesso!');
-    } catch (error) {
-      toast.error(dict?.toast?.rollSaveError || 'Erro ao salvar rolo de filamento.');
+    } catch (error: any) {
+      console.error('Save error:', error);
+      toast.error(`${dict?.toast?.rollSaveError || 'Erro ao salvar rolo'}: ${error?.message || 'Desconhecido'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -237,10 +238,10 @@ export default function EstoquePage() {
       return;
     }
 
-    const cost = Number(formData.get('cost'));
+    const cost = Number(formData.get('cost')) || 0;
     const supplier_id = (formData.get('supplier_id') as string) || null;
-    const invoice_number = formData.get('invoice_number') as string;
-    const entry_date = formData.get('entry_date') as string;
+    const invoice_number = (formData.get('invoice_number') as string) || null;
+    const entry_date = (formData.get('entry_date') as string) || undefined;
 
     const newItems: Partial<Inventory>[] = Array.from({ length: quantity }).map(() => ({
       material_type: batchGroup.material_type,
@@ -263,8 +264,9 @@ export default function EstoquePage() {
       await loadData();
       setIsBatchModalOpen(false);
       toast.success(`${quantity} ${dict?.toast?.batchAdded || 'rolo(s) adicionado(s) com sucesso!'}`);
-    } catch (error) {
-      toast.error(dict?.toast?.batchError || 'Erro ao adicionar lote de rolos.');
+    } catch (error: any) {
+      console.error('Batch save error:', error);
+      toast.error(`${dict?.toast?.batchSaveError || 'Erro ao adicionar lote'}: ${error?.message || 'Desconhecido'}`);
     } finally {
       setIsSubmitting(false);
     }

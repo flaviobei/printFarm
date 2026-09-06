@@ -2,6 +2,9 @@
   "sidebar": {
     "title": "printFarm",
     "dashboard": "Dashboard",
+    "orders": "Pedidos",
+    "production": "Produção",
+    "finishedGoods": "Peças Prontas",
     "productionQueue": "Fila de Produção",
     "catalog": "Catálogo de SKUs",
     "inventory": "Estoque",
@@ -11,7 +14,10 @@
     "billing": "Assinaturas",
     "admin": "Super Admin",
     "logout": "Sair",
-    "suppliers": "Fornecedores"
+    "suppliers": "Fornecedores",
+    "customers": "Clientes",
+    "finance": "Financeiro",
+    "supplies": "Insumos"
   },
   "home": {
     "title": "Dashboard Geral",
@@ -50,18 +56,63 @@
     "loading": "Carregando dados..."
   },
   "pedidos": {
-    "title": "Fila de Produção",
-    "description": "Acompanhe e gerencie a fila de produção e integração com Mercado Livre.",
+    "title": "Pedidos de Venda",
+    "description": "Gerencie os pedidos dos clientes e acompanhe o status de cada venda.",
     "columns": {
-      "pending": "Aguardando Produção",
-      "printing": "Imprimindo",
-      "finishing": "Acabamento",
+      "pending": "Pendente",
+      "production": "Em Produção",
       "ready": "Pronto para Envio",
       "shipped": "Enviado"
     },
     "cards": {
       "deadline": "Prazo:",
-      "customer": "Cliente"
+      "customer": "Cliente",
+      "items": "Itens",
+      "progress": "Progresso",
+      "fromStock": "do estoque",
+      "needsPrinting": "para imprimir"
+    },
+    "newOrder": {
+      "title": "Novo Pedido",
+      "addItem": "Adicionar Item",
+      "selectSku": "Selecione um produto...",
+      "quantity": "Qtd",
+      "unitPrice": "Preço Unit.",
+      "inStock": "em estoque",
+      "willUseStock": "Vai usar do estoque",
+      "willPrint": "Vai gerar impressão"
+    },
+    "delivery": {
+      "confirmDelivery": "Confirmar Entrega"
+    },
+    "loading": "Carregando pedidos...",
+    "emptyColumn": "Vazio",
+    "blocked": "Aguardando impressões",
+    "allReady": "Todas as peças prontas!"
+  },
+  "producao": {
+    "title": "Fila de Impressão",
+    "description": "Gerencie as tarefas de impressão, aloque impressoras e acompanhe o acabamento.",
+    "columns": {
+      "queued": "Na Fila",
+      "printing": "Imprimindo",
+      "finishing": "Acabamento",
+      "finished": "Concluído"
+    },
+    "cards": {
+      "pieces": "peças",
+      "standalone": "Avulso",
+      "orderRef": "Pedido",
+      "finishingNotes": "Notas de acabamento"
+    },
+    "actions": {
+      "newPrint": "Nova Impressão",
+      "split": "Dividir",
+      "splitTitle": "Dividir Tarefa",
+      "splitDesc": "Separe parte das peças para outra impressora.",
+      "splitQty": "Quantidade a separar",
+      "splitConfirm": "Dividir",
+      "completeFinishing": "Concluir Acabamento"
     },
     "setup": {
       "title": "Iniciar Produção",
@@ -79,7 +130,7 @@
     "completion": {
       "title": "Baixa de Produção",
       "printFinished": "Impressão Finalizada",
-      "printFinishedDesc": "A impressora será liberada para o próximo pedido. Confirme os gastos para atualizar o estoque.",
+      "printFinishedDesc": "A impressora será liberada. Confirme os gastos para atualizar o estoque.",
       "weightUsed": "Peso Gasto (g)",
       "wasteWeight": "Desperdício (g)",
       "weightUsedFull": "Peso Gasto na Peça (g)",
@@ -90,20 +141,33 @@
     "failure": {
       "title": "Falha de Produção (Abortar)",
       "printAborted": "Impressão Abortada",
-      "printAbortedDesc": "O pedido retornará para Aguardando Produção. Informe quanto material foi perdido (espaguete, base) para dar baixa no estoque.",
+      "printAbortedDesc": "A tarefa retornará para a fila. Informe quanto material foi perdido.",
       "failureWaste": "Desperdício da Falha (g)",
       "registerAbort": "Registrar Perda e Abortar",
       "registering": "Registrando..."
     },
-    "delivery": {
-      "confirmDelivery": "Confirmar Entrega"
+    "loading": "Carregando tarefas...",
+    "emptyColumn": "Vazio"
+  },
+  "pecas": {
+    "title": "Peças Prontas",
+    "description": "Estoque de peças já impressas e acabadas, prontas para venda imediata.",
+    "kpis": {
+      "totalPieces": "Total de Peças",
+      "totalSkus": "SKUs com Estoque",
+      "estimatedValue": "Valor Estimado"
     },
-    "loading": "Carregando fila...",
-    "selectSku": "Selecione um produto do catálogo...",
-    "statusLabel": "Status Atual",
-    "emptyColumn": "Vazio",
-    "unknown": "Desconhecido",
-    "removedProduct": "Produto Removido"
+    "table": {
+      "product": "Produto",
+      "quantity": "Quantidade",
+      "value": "Valor",
+      "origin": "Origem",
+      "date": "Data",
+      "actions": "Ações"
+    },
+    "adjust": "Ajustar Quantidade",
+    "addManual": "Entrada Manual",
+    "noStock": "Nenhuma peça em estoque no momento."
   },
   "catalogo": {
     "title": "Catálogo de SKUs",
@@ -432,5 +496,92 @@
       "deleted": "Fornecedor removido.",
       "error": "Erro ao salvar fornecedor."
     }
+  },
+  "finance": {
+    "title": "Gerenciador Financeiro",
+    "subtitle": "Acompanhe e lance receitas e despesas para obter o lucro líquido do seu negócio.",
+    "kpis": {
+      "totalIncome": "Total de Entradas",
+      "totalIncomeDesc": "Vendas concluídas e receitas.",
+      "totalExpense": "Total de Saídas",
+      "totalExpenseDesc": "Custo de material e despesas.",
+      "netBalance": "Saldo Líquido",
+      "netBalanceDesc": "Lucro real do período."
+    },
+    "table": {
+      "date": "Data",
+      "description": "Descrição",
+      "category": "Categoria",
+      "type": "Tipo",
+      "amount": "Valor (R$)",
+      "actions": "Ações"
+    },
+    "filters": {
+      "all": "Todos",
+      "income": "Apenas Entradas",
+      "expense": "Apenas Saídas"
+    },
+    "types": {
+      "income": "Entrada",
+      "expense": "Saída"
+    },
+    "addTransaction": "Nova Movimentação",
+    "noTransactionsTitle": "Nenhuma movimentação",
+    "noTransactionsDesc": "Suas vendas e compras aparecerão aqui. Adicione lançamentos manuais se precisar.",
+    "form": {
+      "type": "Tipo de Lançamento",
+      "amount": "Valor (R$)",
+      "date": "Data",
+      "category": "Categoria (Ex: Manutenção, Luz)",
+      "description": "Descrição (Ex: Troca de bico)"
+    },
+    "toast": {
+      "saved": "Lançamento salvo com sucesso!",
+      "deleted": "Lançamento excluído com sucesso!",
+      "error": "Erro ao processar lançamento."
+    }
+  },
+  "customers": {
+    "title": "Clientes",
+    "subtitle": "Gerencie a sua base de compradores e histórico de pedidos.",
+    "addCustomer": "Novo Cliente",
+    "kpis": {
+      "total": "Total de Clientes",
+      "marketplace": "Vindos de Marketplaces",
+      "direct": "Vendas Diretas"
+    },
+    "table": {
+      "name": "Nome / Contato",
+      "location": "Localização",
+      "source": "Origem",
+      "orders": "Pedidos",
+      "actions": "Ações"
+    },
+    "form": {
+      "name": "Nome Completo",
+      "email": "E-mail",
+      "phone": "Telefone / WhatsApp",
+      "address": "Endereço",
+      "city": "Cidade",
+      "state": "Estado",
+      "zip": "CEP"
+    },
+    "toast": {
+      "saved": "Cliente salvo!",
+      "deleted": "Cliente removido.",
+      "error": "Erro ao salvar cliente."
+    }
+  },
+  "integrations": {
+    "title": "Integrações e Módulos",
+    "desc": "Ative ou desative as conexões com Marketplaces e serviços de Logística.",
+    "marketplaces": "Marketplaces Ativos",
+    "logistics": "Logística (Transportadoras)",
+    "simulate": "Simular Venda Externa (Mock)",
+    "shippingModalTitle": "Gerar Envio",
+    "shippingModalDesc": "Escolha como o pedido será despachado. Isso calculará o frete e gerará o rastreio.",
+    "shippingService": "Serviço de Envio",
+    "generateLabel": "Gerar Etiqueta & Despachar",
+    "printLabel": "Imprimir Etiqueta"
   }
 }

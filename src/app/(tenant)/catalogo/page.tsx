@@ -97,6 +97,9 @@ export default function CatalogoPage() {
       weight_grams: calculatedWeight,
       print_time_hours: Number(formData.get('printTime')),
       sale_price: Number(formData.get('salePrice')),
+      length_cm: Number(formData.get('length_cm')) || 0,
+      width_cm: Number(formData.get('width_cm')) || 0,
+      height_cm: Number(formData.get('height_cm')) || 0,
       image_url: imageUrl,
       multicolor_weights: isMulticolor ? colorWeights : null
     };
@@ -423,6 +426,27 @@ export default function CatalogoPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">{dict.forms.sku.salePrice}</label>
               <input required defaultValue={editingSku?.sale_price || ''} name="salePrice" type="number" step="0.01" min="1" className="w-full p-2 border rounded-md text-sm bg-background" placeholder="89.90" />
+            </div>
+          </div>
+
+          <div className="border rounded-lg p-4 bg-muted/20 space-y-3">
+            <h4 className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+              <Box className="w-4 h-4" />
+              Medidas do Pacote (Para Frete)
+            </h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Comprimento (cm)</label>
+                <input required defaultValue={editingSku?.length_cm || ''} name="length_cm" type="number" step="0.1" min="1" className="w-full p-2 border rounded-md text-sm bg-background" placeholder="20" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Largura (cm)</label>
+                <input required defaultValue={editingSku?.width_cm || ''} name="width_cm" type="number" step="0.1" min="1" className="w-full p-2 border rounded-md text-sm bg-background" placeholder="15" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Altura (cm)</label>
+                <input required defaultValue={editingSku?.height_cm || ''} name="height_cm" type="number" step="0.1" min="1" className="w-full p-2 border rounded-md text-sm bg-background" placeholder="10" />
+              </div>
             </div>
           </div>
 
